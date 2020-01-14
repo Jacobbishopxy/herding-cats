@@ -13,5 +13,5 @@ Original from [herding cats](http://eed3si9n.com/herding-cats/).
     
     - FoldLeft
     
-    - Method injection (enrich my library)
+    - Method injection
 

@@ -13,8 +13,11 @@ ThisBuild / scalaVersion := "2.13.1"
 javacOptions ++= Seq("-encoding", "UTF-8")
 javaOptions in run += "-Xmx1G"
 
-//enablePlugins(PackPlugin)
 
+scalacOptions += "-Ymacro-annotations"
 
-libraryDependencies += "org.typelevel" %% "cats-core" % "2.0.0"
+libraryDependencies ++= Seq(
+  "org.typelevel" %% "cats-core" % "2.0.0",
+  "org.typelevel" %% "simulacrum" % "1.0.0",
+)
 

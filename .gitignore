@@ -22,3 +22,6 @@ build/
 *.env
 
 null
+!project/build.properties
+!project/Dependencies.scala
+!project/plugins.sbt
