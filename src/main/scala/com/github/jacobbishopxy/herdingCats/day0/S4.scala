@@ -1,5 +1,6 @@
 package com.github.jacobbishopxy.herdingCats.day0
 
+import simulacrum._
 
 /**
  * Created by Jacob Xie on 1/14/2020
@@ -11,7 +12,6 @@ object S4 {
   // we would like to provide an operator. we don't want to enrich just one type,
   // but enrich all types that has an instance for Monoid.
 
-  import simulacrum._
 
   @typeclass trait Monoid[A] {
     @op("|+|") def mAppend(a: A, b: A): A

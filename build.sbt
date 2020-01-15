@@ -14,7 +14,13 @@ javacOptions ++= Seq("-encoding", "UTF-8")
 javaOptions in run += "-Xmx1G"
 
 
-scalacOptions += "-Ymacro-annotations"
+scalacOptions ++= List(
+  "-unchecked",
+  "-deprecation",
+  "-Ymacro-annotations",
+  "-language:higherKinds",
+  "-language:implicitConversions"
+)
 
 libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % "2.0.0",
