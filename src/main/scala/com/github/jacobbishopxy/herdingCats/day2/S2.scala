@@ -11,7 +11,7 @@ import cats.implicits._
  *
  * The Functor typeclass is basically for things that can be mapped over.
  */
-object S2 extends App {
+object S2 {
 
   Functor[List].map(List(1, 2, 3))(_ + 1)
 
