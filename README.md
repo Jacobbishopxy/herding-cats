@@ -39,3 +39,16 @@ Original from [herding cats](http://eed3si9n.com/herding-cats/).
     
     - Import guide
 
+## Note
+
+Functor -> Monad -> Applicative
+
+- Functor: 
+    `A => B`
+
+- Monad: 
+    `A => F[B]`
+
+- Applicative:
+    `F[A => B]`
+
