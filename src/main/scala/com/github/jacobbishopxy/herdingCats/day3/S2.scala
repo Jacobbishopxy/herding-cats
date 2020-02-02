@@ -15,7 +15,7 @@ import cats.implicits._
  * only one parameter. But what happens when we map a function like *, which takes two parameters,
  * over a functor?
  */
-object S2 extends App {
+object S2 {
 
   val hs: List[Int => Int] = Functor[List].map(List(1, 2, 3, 4)) {
     ((_: Int) * (_: Int)).curried

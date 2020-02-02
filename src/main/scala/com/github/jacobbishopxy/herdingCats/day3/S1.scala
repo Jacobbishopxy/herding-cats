@@ -15,7 +15,7 @@ package com.github.jacobbishopxy.herdingCats.day3
 object S1 {
 
   /**
-   * `:kind` command is now part of Scala 2.11. Let's try using it: (all codes are written in Scala shell)
+   * `:kind` command is now part of Scala 2.11. Let's try using it: (all codes are written in Scala REPL)
    *
    *    `
    *    scala> :k Int
