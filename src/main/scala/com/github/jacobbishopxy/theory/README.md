@@ -1,5 +1,7 @@
 # Theory
 
+## Introduction
+
 ## Monoids and Semigroups
 
 ## Functors
