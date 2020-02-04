@@ -42,9 +42,9 @@ object TheIdentityMonad {
    * We can cast any value of any type to a corresponding Id:
    */
 
-  "Jacob": Id[String] // Jacob
-  123: Id[Int] // 123
-  List(1, 2, 3): Id[List[Int]] // List(1, 2, 3)
+  val x1 = "Jacob": Id[String] // Jacob
+  val x2 = 123: Id[Int] // 123
+  val x3 = List(1, 2, 3): Id[List[Int]] // List(1, 2, 3)
 
   // Cats provides instances of various type classes for Id, including `Functor` and `Monad`. These
   // let us call `map`, `flatMap`, and `pure` passing in plain values:

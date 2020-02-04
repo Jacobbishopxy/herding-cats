@@ -20,6 +20,10 @@
 
 2. Mondas in Cats
 
+3. The Identity Monad
+
+4. Either
+
 ## Monad Transformers
 
 ## Semigroupal and Applicative
