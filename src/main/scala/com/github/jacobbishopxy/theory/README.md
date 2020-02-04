@@ -24,6 +24,18 @@
 
 4. Either
 
+5. Error Handling and MonadError
+
+6. The Eval Monad
+
+7. The Writer Monad
+
+8. The Reader Monad
+
+9. The State Monad
+
+10. Defining Custom Monads
+
 ## Monad Transformers
 
 ## Semigroupal and Applicative
