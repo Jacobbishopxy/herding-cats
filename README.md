@@ -1,43 +1,19 @@
 # Herding CATS
 
-Original from [herding cats](http://eed3si9n.com/herding-cats/).
+book source: [Scala with CATS](https://underscore.io/books/scala-with-cats/)
+
+web source: [herding cats](http://eed3si9n.com/herding-cats/)
 
 
 ## Content
 
-1. day 0
+### theory
 
-    - What is polymorphism?
-    
-    - sum function
-    
-    - FoldLeft
-    
-    - Method injection
+[README](https://github.com/Jacobbishopxy/herding-cats/tree/master/src/main/scala/com/github/jacobbishopxy/theory)
 
-2. day 1
+### herding cats
 
-    - Eq
-    
-    - Order
-    
-    - PartialOrder
-    
-    - Show
-    
-    - Read
-    
-    - Enum
-    
-    - Numeric
-
-3. day 2
-
-    - Making our own typeclass with simulacrum
-    
-    - Functor
-    
-    - Import guide
+[README](https://github.com/Jacobbishopxy/herding-cats/tree/master/src/main/scala/com/github/jacobbishopxy/herdingCats)
 
 ## Note
 
