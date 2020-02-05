@@ -155,7 +155,7 @@ object TheWriterMonad {
   // cats.Id[(Int, Vector[String])] = (42,Vector(a, b, c, x, y, z))
 }
 
-object Exercise {
+object ExerciseTheWriterMonad {
 
   // Show Your Working
 

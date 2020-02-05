@@ -38,7 +38,7 @@ object Definition {
    */
 }
 
-object Exercise {
+object ExerciseDefinition {
 
   // Getting Func-y
 

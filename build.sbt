@@ -22,6 +22,7 @@ scalacOptions ++= List(
   "-language:implicitConversions"
 )
 
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
 val catsV = "2.0.0"
 

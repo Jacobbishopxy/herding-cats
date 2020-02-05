@@ -130,7 +130,7 @@ object TheStateMonad {
 
 }
 
-object Exercise {
+object ExerciseTheStateMonad {
 
   // Post-Order Calculator
 

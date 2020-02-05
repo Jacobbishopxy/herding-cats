@@ -66,7 +66,7 @@ object TheIdentityMonad {
    */
 }
 
-object Exercise {
+object ExerciseTheIdentityMonad {
 
   // Monadic Secret Identities
 

@@ -89,7 +89,7 @@ object TheReaderMonad {
    */
 }
 
-object Exercise {
+object ExerciseTheReaderMonad {
 
   // Hacking on Readers
 

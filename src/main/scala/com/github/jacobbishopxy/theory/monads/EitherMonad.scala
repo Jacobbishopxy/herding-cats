@@ -178,7 +178,7 @@ object EitherMonad {
   result2.fold(handleError, println) // User not found: jacob
 }
 
-object Exercise {
+object ExerciseEither {
 
   // what is best?
 

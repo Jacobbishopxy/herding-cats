@@ -134,7 +134,7 @@ object TheEvalMonad {
    */
 }
 
-object Exercise {
+object ExerciseTheEvalMonad {
 
   // Safer Folding using Eval
 
