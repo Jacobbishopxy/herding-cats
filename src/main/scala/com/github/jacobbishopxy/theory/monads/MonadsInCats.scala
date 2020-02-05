@@ -19,13 +19,13 @@ object MonadsInCats {
   import cats.instances.option._
   import cats.instances.list._
 
-  val opt1 = Monad[Option].pure(3) // Some(3)
-  val opt2 = Monad[Option].flatMap(opt1)(a => Some(a + 2)) // Some(5)
-  val opt3 = Monad[Option].map(opt2)(a => 100 * a) // Some(500)
+  val opt1: Option[Int] = Monad[Option].pure(3) // Some(3)
+  val opt2: Option[Int] = Monad[Option].flatMap(opt1)(a => Some(a + 2)) // Some(5)
+  val opt3: Option[Int] = Monad[Option].map(opt2)(a => 100 * a) // Some(500)
 
-  val lst1 = Monad[List].pure(3) // List(3)
-  val lst2 = Monad[List].flatMap(List(1, 2, 3))(a => List(a, a * 10)) // List(1, 10, 2, 20, 3, 30)
-  val lst3 = Monad[List].map(lst2)(a => a + 123) // List(124, 133, 125, 143, 126, 153)
+  val lst1: List[Int] = Monad[List].pure(3) // List(3)
+  val lst2: List[Int] = Monad[List].flatMap(List(1, 2, 3))(a => List(a, a * 10)) // List(1, 10, 2, 20, 3, 30)
+  val lst3: List[Int] = Monad[List].map(lst2)(a => a + 123) // List(124, 133, 125, 143, 126, 153)
 
   /**
    * 2. Default Instances
@@ -53,10 +53,10 @@ object MonadsInCats {
   // instance:
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val fm = Monad[Future]
+  val fm: Monad[Future] = Monad[Future]
 
   // The Monad instance uses the captured `ExecutionContext` for subsequent calls to pure and flatMap:
-  val future = fm.flatMap(fm.pure(1))(x => fm.pure(x + 2))
+  val future: Future[Int] = fm.flatMap(fm.pure(1))(x => fm.pure(x + 2))
 
   Await.result(future, 1.second)
 

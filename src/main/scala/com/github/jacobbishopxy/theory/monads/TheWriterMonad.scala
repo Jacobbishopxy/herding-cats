@@ -100,7 +100,7 @@ object TheWriterMonad {
   // cats.data.WriterT[cats.Id,Vector[String],Int] =
   // WriterT((Vector(a, b, c, x, y, z),42))
 
-  writer1.run
+  val w1 = writer1.run
   // cats.Id[(Vector[String], Int)] = (Vector(a, b, c, x, y, z) ,42)
 
   // In addition to transforming the result with `map` and `flatMap`, we can transform the log in
@@ -109,7 +109,7 @@ object TheWriterMonad {
   // cats.data.WriterT[cats.Id,scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(A, B, C, X, Y, Z),42))
 
-  writer2.run
+  val w2 = writer2.run
   // cats.Id[(scala.collection.immutable.Vector[String], Int)] = (Vector(A, B, C, X, Y, Z),42)
 
   /**
@@ -125,7 +125,7 @@ object TheWriterMonad {
   // cats.data.WriterT[cats.Id,scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(A, B, C, X, Y, Z),4200))
 
-  writer3.run
+  val w3 = writer3.run
   // cats.Id[(scala.collection.immutable.Vector[String], Int)] =
   // (Vector(A, B, C, X, Y, Z),4200)
 
@@ -137,21 +137,21 @@ object TheWriterMonad {
   // cats.data.WriterT[cats.Id,scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(a!, b!, c!, x!, y!, z!), 42000))
 
-  writer4.run
+  val w4 = writer4.run
   //  cats.Id[(scala.collection.immutable.Vector[String], Int)] =
   //  (Vector(a!, b!, c!, x!, y!, z!),42000)
 
   val writer5 = writer1.reset
   // cats.data.WriterT[cats.Id,Vector[String],Int] = WriterT((Vector(),42))
 
-  writer5.run
+  val w5 = writer5.run
   // cats.Id[(Vector[String], Int)] = (Vector(),42)
 
   val writer6 = writer1.swap
   // cats.data.WriterT[cats.Id,Int,Vector[String]] =
   // WriterT((42,Vector(a, b, c, x, y, z)))
 
-  writer6.run
+  val w6 = writer6.run
   // cats.Id[(Int, Vector[String])] = (42,Vector(a, b, c, x, y, z))
 }
 
