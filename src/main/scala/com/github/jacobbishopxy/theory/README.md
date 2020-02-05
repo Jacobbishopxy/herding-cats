@@ -38,6 +38,12 @@
 
 ## Monad Transformers
 
+1. Composing Monads
+
+2. Monad Transformers in Cats
+
+3. Monads: Transform and Roll Out
+
 ## Semigroupal and Applicative
 
 ## Foldable and Traverse
