@@ -42,7 +42,7 @@
 
 2. Monad Transformers in Cats
 
-3. Monads: Transform and Roll Out
+3. Exercise: Monads: Transform and Roll Out
 
 ## Semigroupal and Applicative
 
