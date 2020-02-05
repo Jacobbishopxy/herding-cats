@@ -101,7 +101,7 @@ object TheStateMonad {
 
   pureDemo.run(10).value // (Int, String) = (10, Result)
 
-  val inspectDemo = State.inspect[Int, String](_ + "!")
+  val inspectDemo = State.inspect[Int, String](_.toString + "!")
 
   inspectDemo.run(10).value // (Int, String) = (10, 10!)
 
