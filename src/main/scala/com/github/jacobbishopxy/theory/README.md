@@ -134,4 +134,14 @@ values within a context.
 
 ## Semigroupal and Applicative
 
+1. Semigroupal
+
+2. Apply Syntax
+
+3. Semigroupal Applied to Differnet Types
+
+4. Validated
+
+5. Apply and Applicative
+
 ## Foldable and Traverse
