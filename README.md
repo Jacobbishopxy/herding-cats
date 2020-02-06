@@ -17,14 +17,42 @@ web source: [herding cats](http://eed3si9n.com/herding-cats/)
 
 ## Note
 
-Functor -> Monad -> Applicative
+- pure:
 
-- Functor: 
-    `A => B`
+    `A => F[A]`
 
-- Monad: 
-    `A => F[B]`
+- map:
 
-- Applicative:
-    `F[A => B]`
+    `(F[A], A => B) => F[B]`
 
+- flatMap:
+
+    `(F[A], A => F[B]) => F[B]`
+
+- product:
+
+    `(F[A], F[B]) => F[(A, B)]`
+
+- ap:
+
+    `(F[A], F[A => B]) => F[B]`
+    
+
+Monad type class hierarchy:
+
+```
+
+Cartesian            Functor
+(product)             (map)
+    |___________________|
+              |
+            Apply
+            (ap)
+     _________|_________
+    |                   |
+Applicative          FlatMap
+  (pure)            (flatMap)
+    |___________________|
+              |
+            Monad
+```
