@@ -56,3 +56,9 @@ Applicative          FlatMap
               |
             Monad
 ```
+
+Cats type class view:
+
+thanks to tpolecat's [project](https://github.com/tpolecat/cats-infographic)
+
+![Cats type class](docs/cats-type-class.svg)
