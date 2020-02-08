@@ -9,11 +9,11 @@ web source: [herding cats](http://eed3si9n.com/herding-cats/)
 
 ### theory
 
-[README](https://github.com/Jacobbishopxy/herding-cats/tree/master/src/main/scala/com/github/jacobbishopxy/theory)
+[README](src/main/scala/com/github/jacobbishopxy/theory/README.md)
 
 ### herding cats
 
-[README](https://github.com/Jacobbishopxy/herding-cats/tree/master/src/main/scala/com/github/jacobbishopxy/herdingCats)
+[README](src/main/scala/com/github/jacobbishopxy/herdingCats/README.md)
 
 ## Note
 

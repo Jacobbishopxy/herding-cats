@@ -2,6 +2,18 @@
 
 ## Introduction
 
+1. Anatomy of a Type Class
+
+2. Working with Implicits
+
+3. Exercise: Printable Library
+
+4. Meet Cats
+
+5. Example: Eq
+
+6. Controlling Instance Selection
+
 ## Monoids and Semigroups
 
 1. Definitions
