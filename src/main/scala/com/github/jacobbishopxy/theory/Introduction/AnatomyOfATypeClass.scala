@@ -6,7 +6,7 @@ package com.github.jacobbishopxy.theory.Introduction
  * There are three important components to the type class pattern: the type class itself, instances for
  * particular types, and the interface methods that we expose to users.
  */
-object AnatomyOfATypeClass {
+object AnatomyOfATypeClass extends App {
 
   /**
    * 1. The Type Class
@@ -130,7 +130,7 @@ object AnatomyOfATypeClass {
 
   import JsonWriterInstances._
 
-  implicitly[JsonWriter[String]]
+  implicitly[JsonWriter[Person]].write(Person("Jacob", "jacob@example.com"))
 
   /**
    * Most type classes in Cats provide other means to summon instances. However, `implicitly` is a good
