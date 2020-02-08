@@ -1,4 +1,4 @@
-package com.github.jacobbishopxy.theory.Introduction
+package com.github.jacobbishopxy.theory.introduction
 
 /**
  * Created by jacob on 2/8/2020
@@ -84,7 +84,7 @@ object WorkingWithImplicits {
    * Here is the same code written out as an `implicit def`:
    */
 
-  import com.github.jacobbishopxy.theory.Introduction.AnatomyOfATypeClass.{JsonWriter, JsNull}
+  import com.github.jacobbishopxy.theory.introduction.AnatomyOfATypeClass.{JsonWriter, JsNull}
 
   implicit def optionWriter[A](implicit writer: JsonWriter[A]): JsonWriter[Option[A]] =
     new JsonWriter[Option[A]] {

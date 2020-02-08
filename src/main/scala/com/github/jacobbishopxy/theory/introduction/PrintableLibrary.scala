@@ -1,4 +1,4 @@
-package com.github.jacobbishopxy.theory.Introduction
+package com.github.jacobbishopxy.theory.introduction
 
 /**
  * Created by jacob on 2/8/2020

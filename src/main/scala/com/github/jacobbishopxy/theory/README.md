@@ -2,23 +2,23 @@
 
 ## Introduction
 
-1. Anatomy of a Type Class
+1. [Anatomy of a Type Class](introduction/AnatomyOfATypeClass.scala)
 
-2. Working with Implicits
+2. [Working with Implicits](introduction/WorkingWithImplicits.scala)
 
-3. Exercise: Printable Library
+3. [Exercise: Printable Library](introduction/PrintableLibrary.scala)
 
-4. Meet Cats
+4. [Meet Cats](introduction/MeetCats.scala)
 
-5. Example: Eq
+5. [Example: Eq](introduction/EqTypeClass.scala)
 
-6. Controlling Instance Selection
+6. [Controlling Instance Selection](introduction/ControllingInstanceSelection.scala)
 
 ## Monoids and Semigroups
 
-1. Definitions
+1. [Definitions](monoidsAndSemigroups/Definitions.scala)
 
-2. Monoids in Cats
+2. [Monoids in Cats](monoidsAndSemigroups/MonoidsInCats.scala)
 
 ### Summary
 
@@ -48,9 +48,9 @@ the tip of the iceberg in terms of the abstractions Cats enables us to make. In 
 
 ## Functors
 
-1. Definition
+1. [Definition](functors/Definition.scala)
 
-2. Functors in Cats
+2. [Functors in Cats](functors/FunctorsInCats.scala)
 
 ### Summary
 
@@ -82,25 +82,25 @@ in Chapter 6.
 
 ## Monads
 
-1. Definition
+1. [Definition](monads/Definition.scala)
 
-2. Mondas in Cats
+2. [Mondas in Cats](monads/MonadsInCats.scala)
 
-3. The Identity Monad
+3. [The Identity Monad](monads/TheIdentityMonad.scala)
 
-4. Either
+4. [Either](monads/EitherMonad.scala)
 
-5. Error Handling and MonadError
+5. [Error Handling and MonadError](monads/ErrorHandlingAndMonadError.scala)
 
-6. The Eval Monad
+6. [The Eval Monad](monads/TheEvalMonad.scala)
 
-7. The Writer Monad
+7. [The Writer Monad](monads/TheWriterMonad.scala)
 
-8. The Reader Monad
+8. [The Reader Monad](monads/TheReaderMonad.scala)
 
-9. The State Monad
+9. [The State Monad](monads/TheStateMonad.scala)
 
-10. Defining Custom Monads
+10. [Defining Custom Monads](monads/DefiningCustomMonads.scala)
 
 ### Summary
 
@@ -120,11 +120,11 @@ monads, but having it around gives us benefits of which we can grateful when wri
 
 ## Monad Transformers
 
-1. Composing Monads
+1. [Composing Monads](monadTransformers/ComposingMonads.scala)
 
-2. Monad Transformers in Cats
+2. [Monad Transformers in Cats](monadTransformers/MonadTransformersInCats.scala)
 
-3. Exercise: Monads: Transform and Roll Out
+3. [Exercise: Monads: Transform and Roll Out](monadTransformers/TransformAndRollOut.scala)
 
 ### Summary
 
@@ -146,15 +146,15 @@ values within a context.
 
 ## Semigroupal and Applicative
 
-1. Semigroupal
+1. [Semigroupal](semigroupalAndApplicative/SemigroupalTypeClass.scala)
 
-2. Apply Syntax
+2. [Apply Syntax](semigroupalAndApplicative/ApplySyntax.scala)
 
-3. Semigroupal Applied to Differnet Types
+3. [Semigroupal Applied to Different Types](semigroupalAndApplicative/SemigroupalAppliedToDifferentTypes.scala)
 
-4. Validated
+4. [Validated](semigroupalAndApplicative/ValidatedDataType.scala)
 
-5. Apply and Applicative
+5. [Apply and Applicative](semigroupalAndApplicative/ApplyAndApplicative.scala)
 
 ### Summary
 
@@ -172,6 +172,6 @@ several case studies that bring together all of the concepts from Part I.
 
 ## Foldable and Traverse
 
-1. Foldable
+1. [Foldable]()
 
-2. Traverse
+2. [Traverse]()
