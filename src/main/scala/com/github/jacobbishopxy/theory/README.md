@@ -14,6 +14,29 @@
 
 6. [Controlling Instance Selection](introduction/ControllingInstanceSelection.scala)
 
+### Summary
+
+In this chapter we took a first look at type classes. We implemented our own `Printable` type class using 
+plain Scala before looking at two examples from Cats -- `Show` and `Eq`.
+
+We have now seen the general patterns in Cats type classes:
+
+- The type classes themselves are general patterns in Cats type classes;
+
+- Each type class has a companion object, an `apply` method for materializing instances, one or more 
+construction methods for creating instances, and a collection of other relevant helper methods.
+
+- Default instances are provided via objects in the `cats.instances` package, and are organized by parameter
+type rather than by type class.
+
+- Many type classes have syntax provided via the `cats.syntax` package.
+
+In the remaining chapters of Part I we will look at several broad and powerful type classes -- `Semigroup`, 
+`Monoid`, `Functor`, `Monad`, `Semigroupal`, `Applicative`, `Traverse`, and more. In each case we will learn
+what functionality the type class provides, the formal rules it follows, and how it is implemented in Cats.
+Many of these type classes are more abstract than `Show` or `Eq`. While this makes them harder to learn, it 
+makes them far more useful for solving general problems in our code.
+
 ## Monoids and Semigroups
 
 1. [Definitions](monoidsAndSemigroups/Definitions.scala)
@@ -72,7 +95,7 @@ all the time. In the following chapters we will look at two of these abstraction
 functors.
 
 Functors for collections are extremely important, as they transform each element independently of the rest.
-This allows us to parallelise or distribute transformations on large collections, a technique leverage 
+This allows us to parallelize or distribute transformations on large collections, a technique leverage 
 heavily in "map-reduce" frameworks like Hadoop. We will investigate this approach in more detail in the
 Map-reduce case study later in the book.
 
