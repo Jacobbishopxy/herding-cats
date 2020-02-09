@@ -195,6 +195,6 @@ several case studies that bring together all of the concepts from Part I.
 
 ## Foldable and Traverse
 
-1. [Foldable]()
+1. [Foldable](foldableAndTraverse/FoldableTypeClass.scala)
 
-2. [Traverse]()
+2. [Traverse](foldableAndTraverse/TraverseTypeClass.scala)
