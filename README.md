@@ -4,6 +4,9 @@ book source: [Scala with CATS](https://underscore.io/books/scala-with-cats/)
 
 web source: [herding cats](http://eed3si9n.com/herding-cats/)
 
+cats exercises: [Scala Cats exercises](https://www.scala-exercises.org/cats)
+
+my study note: [CatsStudyNote](docs/CatsStudyNote.md)
 
 ## Content
 
