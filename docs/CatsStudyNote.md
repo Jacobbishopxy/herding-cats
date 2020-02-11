@@ -38,10 +38,13 @@
 3. Monads（单子）
     - 定义与使用
     - 5种实用Monads
-        - Identity
-        - Eval
-        - Writer
-        - Reader
+        - Identity：类型的别名，功能：原子类型 -> 单个参数类型构造函数
+        - Eval：
+            - `Eval.now`：与Scala的`val`对应（立即求值并储存）
+            - `Eval.later`：与Scala的`lazy val`对应（调用计算并储存）
+            - `Eval.always`：与Scala的`def`对应（调用计算不储存）
+        - Writer：携带log并计算
+        - Reader：
         - State
     - 自定义Monad
     
@@ -77,7 +80,7 @@
         1. 绑定已经解除包裹的值`A`
         2. 将已经解除包裹的值输入函数`A => B`
         3. 一个被重新包裹的值被输出`B => F[B]`
-    - 扩展：for表达式是对于序列化的flatMap整合而进行序列化的操作
+    - 扩展：for表达式是对于序列化的flatMap与map整合而进行序列化的操作
     
 3. Monad Transformer
     - 每一种Transformer都是一种数据类型，定义在`cats.data`

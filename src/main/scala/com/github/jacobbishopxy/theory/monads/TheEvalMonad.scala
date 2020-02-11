@@ -29,9 +29,9 @@ object TheEvalMonad {
 
   import cats.Eval
 
-  val now = Eval.now(math.random + 1000)
-  val later = Eval.later(math.random + 2000)
-  val always = Eval.always(math.random + 3000)
+  val now: Eval[Double] = Eval.now(math.random + 1000)
+  val later: Eval[Double] = Eval.later(math.random + 2000)
+  val always: Eval[Double] = Eval.always(math.random + 3000)
 
   // We can extract the result of an Eval using its value method:
   now.value
@@ -51,8 +51,8 @@ object TheEvalMonad {
    * we call Eval's value method to request a result:
    */
 
-  val greeting = Eval
-    .always {println("Step 1"); "Hello"}
+  val greeting: Eval[String] = Eval
+    .always { println("Step 1"); "Hello" }
     .map { str => println("Step 2"); s"$str world" }
 
   greeting.value
@@ -65,9 +65,11 @@ object TheEvalMonad {
    * are always called lazily on demand (def semantics):
    */
   val ans = for {
-    a <- Eval.now {println("Calculating A"); 40}
-    b <- Eval.always {println("Calculating B"); 2}
-  } yield {println("Adding A and B"); a + b}
+    a <- Eval.now { println("Calculating A"); 40 }
+    b <- Eval.always { println("Calculating B"); 2 }
+  } yield {
+    println("Adding A and B"); a + b
+  }
   // Calculating A
 
   ans.value // first access
@@ -84,8 +86,8 @@ object TheEvalMonad {
    * Eval has a memoize method that allows us to memoize a chain of computations. The result of the chain up
    * to the call to memoize is cached, whereas calculations after the call retain their original semantics:
    */
-  val saying = Eval
-    .always {println("Step 1"); "The cat"}
+  val saying: Eval[String] = Eval
+    .always { println("Step 1"); "The cat" }
     .map { str => println("Step 2"); s"$str sat on" }
     .memoize
     .map { str => println("Step 3"); s"$str the mat" }
@@ -134,8 +136,42 @@ object TheEvalMonad {
    */
 }
 
-object ExerciseTheEvalMonad {
+object ExerciseSaferFoldingUsingEval {
 
-  // Safer Folding using Eval
+  // The naive implementation of `foldRight` below is not stack safe. Make it so using `Eval`:
 
+  //  def foldRight[A, B](as: List[A], acc: B)(fn: (A, B) => B): B =
+  //    as match {
+  //      case head :: tail =>
+  //        fn(head, foldRight(tail, acc)(fn))
+  //      case Nil =>
+  //        acc
+  //    }
+
+  import cats.Eval
+
+  def foldRightEval[A, B](as: List[A], acc: Eval[B])(fn: (A, Eval[B]) => Eval[B]): Eval[B] =
+    as match {
+      case head :: tail =>
+        Eval.defer(fn(head, foldRightEval(tail, acc)(fn)))
+      case Nil =>
+        acc
+    }
+
+  def foldRight[A, B](as: List[A], acc: B)(fn: (A, B) => B): B =
+    foldRightEval(as, Eval.now(acc)) { (a, b) =>
+      b.map(fn(a, _))
+    }.value
+
+  def foldRightPro[A, B](xs: List[A], acc: B)(f: (A, B) => B): Eval[B] =
+    xs match {
+      case hd :: tl =>
+        //Eval.defer(foldRightPro(tl, acc)(f).map(b => f(hd, b))) // same as below
+        Eval.defer(foldRightPro(tl, acc)(f)).map(b => f(hd, b))
+      case Nil =>
+        Eval.now(acc)
+    }
+
+  foldRight(List.fill(10000)(10), 0)((a, b) => a + b)
+  foldRightPro(List.fill(10000)(10), 0)((a, b) => a + b).value
 }

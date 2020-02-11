@@ -129,7 +129,7 @@ object TheWriterMonad {
   // cats.Id[(scala.collection.immutable.Vector[String], Int)] =
   // (Vector(A, B, C, X, Y, Z),4200)
 
-  val writer4 = writer1.mapBoth {(log, res) =>
+  val writer4 = writer1.mapBoth { (log, res) =>
     val log2 = log.map(_ + "!")
     val res2 = res * 1000
     (log2, res2)
@@ -155,8 +155,71 @@ object TheWriterMonad {
   // cats.Id[(Int, Vector[String])] = (42,Vector(a, b, c, x, y, z))
 }
 
-object ExerciseTheWriterMonad {
+object ExerciseShowYourWorking {
 
-  // Show Your Working
+  /**
+   * `Writers` are useful for logging operations in multi-threaded environments. Let's confirm this by
+   * computing (and logging) some factorials.
+   *
+   * The factorial function below computes a factorial and prints out the intermediate steps as it runs.
+   * The `slowly` helper function ensures this takes a while to run, even on the very small examples below:
+   */
 
+  def slowly[A](body: => A): A = try body finally Thread.sleep(100)
+
+  def factorial(n: Int): Int = {
+    val ans = slowly(if (n == 0) 1 else n * factorial(n - 1))
+    println(s"fact $n $ans")
+    ans
+  }
+
+  // Here's the output -- a sequence of monotonically increasing values:
+  factorial(5)
+  // fact 0 1
+  // fact 1 1
+  // fact 2 2
+  // fact 3 6
+  // fact 4 24
+  // fact 5 120
+  // Int = 120
+
+  /**
+   * If we start several factorials in parallel, the log messages can become interleaved on standard out.
+   * This makes it difficult to see which messages come from which computation:
+   */
+
+  import scala.concurrent._
+  import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent.duration._
+
+  Await.result(Future.sequence(Vector(
+    Future(factorial(3)),
+    Future(factorial(3))
+  )), 5.seconds)
+
+  /**
+   * Rewrite factorial so it captures the log messages in a `Writer`. Demonstrate that this allows us to
+   * reliably the logs for concurrent computations.
+   */
+
+  import cats.data.Writer
+  import cats.instances.vector._ // for Monoid
+  import cats.syntax.writer._ // for tell
+  import cats.syntax.applicative._ // for pure
+
+  type Logged[A] = Writer[Vector[String], A]
+
+  def factorialPro(n: Int): Logged[Int] =
+    for {
+      ans <- if (n == 0) 1.pure[Logged] else slowly(factorialPro(n - 1).map(_ * n))
+      _ <- Vector(s"fact $n $ans").tell
+    } yield ans
+
+  // test
+
+  val Vector((logA, ansA), (logB, ansB)) =
+    Await.result(Future.sequence(Vector(
+      Future(factorialPro(5).run),
+      Future(factorialPro(3).run)
+    )), 5.second)
 }
