@@ -10,7 +10,7 @@ object TheIdentityMonad {
    * that abstracted over different monads (`sumSquare`).
    */
 
-  import scala.language.higherKinds
+  // import scala.language.higherKinds // no longer import explicitly since Scala 2.13.1
   import cats.Monad
   import cats.syntax.functor._ // for map
   import cats.syntax.flatMap._ // for flatMap
@@ -68,6 +68,42 @@ object TheIdentityMonad {
 
 object ExerciseTheIdentityMonad {
 
-  // Monadic Secret Identities
+  // Implement `pure`, `map` and `flatMap` for `Id`! What interesting discoveries do you uncover about
+  // the implementation?
 
+  import cats.Id
+
+  /**
+   * The `pure` operation creates an `Id[A]` from `A`. But `A` and `Id[A]` are the same type.
+   */
+  def pure[A](value: A): Id[A] = value
+
+  /**
+   * The `map` method takes a parameter of type `Id[A]`, applies a function of type `A => B`, and returns
+   * an `Id[B]`. But `Id[A]` is simply `A` and `Id[B]` is simply `B`. All we have to do is call the function
+   * -- no packing or unpacking required.
+   */
+  def map[A, B](initial: Id[A])(func: A => B): Id[B] =
+    func(initial)
+
+  /**
+   * Once we strip away the `Id` type constructors, `flatMap` and `map` are actually identical.
+   */
+  def flatMap[A, B](initial: Id[A])(func: A => Id[B]): Id[B] =
+    func(initial)
+
+  /**
+   * This ties in with our understanding of functors and monads as sequencing type classes. Each type class
+   * allows us to sequence operations ignoring some kind of complication. In the case of `Id` there is no
+   * complication, making `map` and `flatMap` the same thing.
+   *
+   * Notice that we haven't had to write type annotations in the method bodies above. The compiler is able to
+   * interpret values of type `A` as `Id[A]` and vice versa by the context in which they are used.
+   *
+   * The only restriction we've seen to this is that Scala cannot unify types and type constructors when
+   * searching for implicits. Hence our need to re-type `Int` as `Id[Int]` in the call to `sumSquare` at the
+   * opening of this section:
+   *
+   * `sumSquare(3 : Id[Int], 4 : Id[Int])`
+   */
 }

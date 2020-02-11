@@ -61,8 +61,8 @@
         1. `F[A]`
         2. `map`函数：`(A => B) => F[B]`
     - 法则：
-        1. Identity
-        2. Composition
+        1. Identity：单位元法则`fa.map(a => a) == fa`，其中`a => a`即identity函数
+        2. Composition：组合法则`fa.map(g(f(_))) == fa.map(f).map(g)`
     - 功能：实现`F[A]`到`F[B]`的转换，保持context（即`F`）不变
     
 2. Monad
@@ -70,10 +70,14 @@
         1. `pure`函数：`A => F[A]`，即通过plain value创建一个monadic context（即`F[_]`）
         2. `flatMap`函数：`(F[A], A => F[B]) => F[B]`，即从monadic context中提取值，然后产生一个新的monadic context
     - 法则：
-        1. Left Identity
-        2. Right Identity
-        3. Associativity
-    - for表达式是对于序列化的flatMap整合而进行的操作
+        1. Left Identity：`pure(x).flatMap(f) == f(x)`
+        2. Right Identity：`m.flatMap(pure) == m`
+        3. Associativity：结合性法则`m.flatMap(f).flatMap(g) == m.flatMap(x => f(x).flatMap(g))`
+    - 功能（拆解）：
+        1. 绑定已经解除包裹的值`A`
+        2. 将已经解除包裹的值输入函数`A => B`
+        3. 一个被重新包裹的值被输出`B => F[B]`
+    - 扩展：for表达式是对于序列化的flatMap整合而进行序列化的操作
     
 3. Monad Transformer
     - 每一种Transformer都是一种数据类型，定义在`cats.data`
