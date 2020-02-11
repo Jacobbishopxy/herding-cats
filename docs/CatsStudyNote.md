@@ -109,6 +109,19 @@
             - 其中：`pure`与`empty`概念类似
             
 5. Foldable and Traverse
+    - Foldable
+        - 抽象`foldLef`和`foldRight`操作
+        - `foldLeft`实现：`def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B`
+        - `foldRight`实现：`def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]`
+        - 构建方法：`accumulator` + `binary function`
+            - `accumulator`：monadic context
+            - `binary function`：构建`accumulator`的value（类型`B`）与`item`（类型`A`）关系，返回monadic value
+    - Traverse
+        - 更高级别的抽象相比于`Foldable`，运用`Applicative`的遍历操作（最强大的模式！）
+        - 逻辑：
+            0. 前提：`F`有`Traverse`实例，以及`G`有`Applicative`实例
+            1. traverse: `(G[A], A => F[B]) => F[G[B]]`
+            2. sequence: `G[F[A]] => F[G[A]]`
 
 ## Cats库模块
 
