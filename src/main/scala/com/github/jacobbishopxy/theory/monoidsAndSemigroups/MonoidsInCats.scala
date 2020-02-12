@@ -8,9 +8,10 @@ package com.github.jacobbishopxy.theory.monoidsAndSemigroups
  * 2. the instances
  * 3. the interface
  */
-object MonoidsInCats extends App {
+object MonoidsInCats {
 
   // 1. The Monoid Type Class
+
   import cats.Monoid
   import cats.Semigroup
 
@@ -26,15 +27,37 @@ object MonoidsInCats extends App {
   Semigroup[String].combine("Hi", "there")
 
   // 3. Monoid Syntax
+
   import cats.syntax.semigroup._
 
-  val stringResult = "Hi" |+| "there" |+| Monoid[String].empty
-  println(stringResult)
+  "Hi" |+| "there" |+| Monoid[String].empty
 
 }
 
-object Exercise {
+object ExerciseAddingAllTheThings {
 
-  // Adding All The Things
+  // 0.
+  def add0(items: List[Int]): Int = items.foldLeft(0)(_ + _)
 
+  import cats.Monoid
+  import cats.instances.int._ // for Monoid
+  import cats.syntax.semigroup._ // for |+|
+
+  // 1.
+  def add1(items: List[Int]): Int =
+    items.foldLeft(Monoid[Int].empty)(_ |+| _)
+
+  // 2.
+  def add2[A](items: List[A])(implicit monoid: Monoid[A]): A =
+    items.foldLeft(monoid.empty)(_ |+| _)
+
+  // 3.
+
+  case class Order(totalCost: Double, quantity: Double)
+
+  implicit val monoid: Monoid[Order] = new Monoid[Order] {
+    override def empty: Order = Order(0, 0)
+    override def combine(x: Order, y: Order): Order =
+      Order(x.totalCost + y.totalCost, x.quantity + y.quantity)
+  }
 }

@@ -107,7 +107,7 @@ in Chapter 6.
 
 1. [Definition](monads/Definition.scala)
 
-2. [Mondas in Cats](monads/MonadsInCats.scala)
+2. [Monads in Cats](monads/MonadsInCats.scala)
 
 3. [The Identity Monad](monads/TheIdentityMonad.scala)
 
