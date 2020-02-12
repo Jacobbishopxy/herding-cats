@@ -39,13 +39,16 @@
     - 定义与使用
     - 5种实用Monads
         - Identity：类型的别名，功能：原子类型 -> 单个参数类型构造函数
-        - Eval：
+        - Eval：求值类型的抽象，包含3个子类
             - `Eval.now`：与Scala的`val`对应（立即求值并储存）
             - `Eval.later`：与Scala的`lazy val`对应（调用计算并储存）
             - `Eval.always`：与Scala的`def`对应（调用计算不储存）
         - Writer：携带log并计算
-        - Reader：
-        - State
+            - `Writer[W, A]`携带`W`日志类型以及类型`A`的计算
+        - Reader：用于序列化依赖某相同输入的一系列函数
+            - `Reader[A, B]`接受`A=>B`函数作为参数
+        - State：
+            - ``
     - 自定义Monad
     
 4. Monad Transformers （单子转换）

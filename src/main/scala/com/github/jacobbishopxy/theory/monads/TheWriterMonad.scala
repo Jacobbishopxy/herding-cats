@@ -61,6 +61,8 @@ object TheWriterMonad {
   // `cats.syntax.writer`:
 
   import cats.syntax.writer._
+  import cats.Id
+  import cats.data.WriterT
 
   Vector("msg1", "msg2", "msg3").tell
   // cats.data.Writer[scala.collection.immutable.Vector[String], Unit] =
@@ -69,19 +71,19 @@ object TheWriterMonad {
   // If we have both a result and a log, we can either use `Writer.apply` or we can use the `writer`
   // syntax from `cats.syntax.writer`:
 
-  val a = Writer(Vector("msg1", "msg2", "msg3"), 123)
+  val a: WriterT[Id, Vector[String], Int] = Writer(Vector("msg1", "msg2", "msg3"), 123)
   // a: cats.data.WriterT[cats.Id,scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(msg1, msg2, msg3),123))
 
-  val b = 123.writer(Vector("msg1", "msg2", "msg3"))
+  val b: Writer[Vector[String], Int] = 123.writer(Vector("msg1", "msg2", "msg3"))
   // b: cats.data.Writer[scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(msg1, msg2, msg3),123))
 
-  val aResult = a.value // 123
-  val bResult = b.value // Vector(msg1, msg2, msg3)
+  val aResult: Id[Int] = a.value // 123
+  val bResult: Id[Int] = b.value // Vector(msg1, msg2, msg3)
 
   // We can extract both values at the same time using the run method:
-  val (log, reulst) = b.run
+  val (log, result) = b.run
 
   /**
    * 2. Composing and Transforming Writers
@@ -92,7 +94,7 @@ object TheWriterMonad {
    * such as Vector:
    */
 
-  val writer1 = for {
+  val writer1: WriterT[Id, Vector[String], Int] = for {
     a <- 10.pure[Logged]
     _ <- Vector("a", "b", "c").tell
     b <- 32.writer(Vector("x", "y", "z"))
@@ -100,16 +102,16 @@ object TheWriterMonad {
   // cats.data.WriterT[cats.Id,Vector[String],Int] =
   // WriterT((Vector(a, b, c, x, y, z),42))
 
-  val w1 = writer1.run
+  val w1: (Vector[String], Int) = writer1.run
   // cats.Id[(Vector[String], Int)] = (Vector(a, b, c, x, y, z) ,42)
 
   // In addition to transforming the result with `map` and `flatMap`, we can transform the log in
   // a Writer with the `mapWritten` method:
-  val writer2 = writer1.mapWritten(_.map(_.toUpperCase))
+  val writer2: WriterT[Id, Vector[String], Int] = writer1.mapWritten(_.map(_.toUpperCase))
   // cats.data.WriterT[cats.Id,scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(A, B, C, X, Y, Z),42))
 
-  val w2 = writer2.run
+  val w2: (Vector[String], Int) = writer2.run
   // cats.Id[(scala.collection.immutable.Vector[String], Int)] = (Vector(A, B, C, X, Y, Z),42)
 
   /**
@@ -118,18 +120,18 @@ object TheWriterMonad {
    * that accepts two parameters:
    */
 
-  val writer3 = writer1.bimap(
+  val writer3: WriterT[Id, Vector[String], Int] = writer1.bimap(
     log => log.map(_.toUpperCase),
     res => res * 100
   )
   // cats.data.WriterT[cats.Id,scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(A, B, C, X, Y, Z),4200))
 
-  val w3 = writer3.run
+  val w3: (Vector[String], Int) = writer3.run
   // cats.Id[(scala.collection.immutable.Vector[String], Int)] =
   // (Vector(A, B, C, X, Y, Z),4200)
 
-  val writer4 = writer1.mapBoth { (log, res) =>
+  val writer4: WriterT[Id, Vector[String], Int] = writer1.mapBoth { (log, res) =>
     val log2 = log.map(_ + "!")
     val res2 = res * 1000
     (log2, res2)
@@ -137,21 +139,21 @@ object TheWriterMonad {
   // cats.data.WriterT[cats.Id,scala.collection.immutable.Vector[String],Int] =
   // WriterT((Vector(a!, b!, c!, x!, y!, z!), 42000))
 
-  val w4 = writer4.run
+  val w4: (Vector[String], Int) = writer4.run
   //  cats.Id[(scala.collection.immutable.Vector[String], Int)] =
   //  (Vector(a!, b!, c!, x!, y!, z!),42000)
 
-  val writer5 = writer1.reset
+  val writer5: WriterT[Id, Vector[String], Int] = writer1.reset
   // cats.data.WriterT[cats.Id,Vector[String],Int] = WriterT((Vector(),42))
 
-  val w5 = writer5.run
+  val w5: (Vector[String], Int) = writer5.run
   // cats.Id[(Vector[String], Int)] = (Vector(),42)
 
-  val writer6 = writer1.swap
+  val writer6: WriterT[Id, Int, Vector[String]] = writer1.swap
   // cats.data.WriterT[cats.Id,Int,Vector[String]] =
   // WriterT((42,Vector(a, b, c, x, y, z)))
 
-  val w6 = writer6.run
+  val w6: (Int, Vector[String]) = writer6.run
   // cats.Id[(Int, Vector[String])] = (42,Vector(a, b, c, x, y, z))
 }
 
@@ -167,14 +169,14 @@ object ExerciseShowYourWorking {
 
   def slowly[A](body: => A): A = try body finally Thread.sleep(100)
 
-  def factorial(n: Int): Int = {
-    val ans = slowly(if (n == 0) 1 else n * factorial(n - 1))
+  def factorialOld(n: Int): Int = {
+    val ans = slowly(if (n == 0) 1 else n * factorialOld(n - 1))
     println(s"fact $n $ans")
     ans
   }
 
   // Here's the output -- a sequence of monotonically increasing values:
-  factorial(5)
+  factorialOld(5)
   // fact 0 1
   // fact 1 1
   // fact 2 2
@@ -193,8 +195,8 @@ object ExerciseShowYourWorking {
   import scala.concurrent.duration._
 
   Await.result(Future.sequence(Vector(
-    Future(factorial(3)),
-    Future(factorial(3))
+    Future(factorialOld(3)),
+    Future(factorialOld(3))
   )), 5.seconds)
 
   /**
@@ -203,11 +205,26 @@ object ExerciseShowYourWorking {
    */
 
   import cats.data.Writer
-  import cats.instances.vector._ // for Monoid
   import cats.syntax.writer._ // for tell
   import cats.syntax.applicative._ // for pure
 
   type Logged[A] = Writer[Vector[String], A]
+
+  def factorialNew(n: Int): Logged[Int] =
+    slowly(
+      if (n == 0) 1 writer Vector("fact 0 1")
+      else {
+        factorialNew(n - 1)
+          .mapBoth((w, result) => {
+            val ans = result * n
+            val log = w :+ s"fact $n $ans"
+            (log, ans)
+          })
+      }
+    )
+
+
+  import cats.instances.vector._ // for Monoid
 
   def factorialPro(n: Int): Logged[Int] =
     for {
