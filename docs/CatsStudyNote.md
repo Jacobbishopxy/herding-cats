@@ -45,10 +45,17 @@
             - `Eval.always`：与Scala的`def`对应（调用计算不储存）
         - Writer：携带log并计算
             - `Writer[W, A]`携带`W`日志类型以及类型`A`的计算
-        - Reader：用于序列化依赖某相同输入的一系列函数
+        - Reader：用于序列化依赖某相同输入的一系列函数（可用于依赖注入）
             - `Reader[A, B]`接受`A=>B`函数作为参数
-        - State：
-            - ``
+        - State：携带状态（input state转换为output state）与计算，以纯函数方式模拟mutable state
+            - `State[S, A]`实例代表`S => (S, A)`函数，`S`为状态类型，`A`为计算类型
+            - 5种构造器：
+                1. `State.get`：提取并返回state
+                2. `State.set`：更新state返回unit
+                3. `State.pure`：忽略state返回已提供的结果
+                4. `State.inspect`：提取state后通过转换函数返回
+                5. `State.modify`：通过更新函数更新state返回unit
+            
     - 自定义Monad
     
 4. Monad Transformers （单子转换）
