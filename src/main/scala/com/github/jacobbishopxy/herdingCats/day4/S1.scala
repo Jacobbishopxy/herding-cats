@@ -1,9 +1,9 @@
 package com.github.jacobbishopxy.herdingCats.day4
 
-import cats.kernel.laws.IsEq
-
 /**
  * Created by jacob on 2/14/2020
+ *
+ * Semigroup
  *
  * Haskell's `Monoid` is split in to `Semigroup` and `Monoid` in Cats. They are also type aliases of
  * `algebra.Semigroup` and `algebra.Monoid`. As with `Apply` and `Applicative`, `Semigroup` is a weaker
