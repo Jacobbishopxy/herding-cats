@@ -6,7 +6,7 @@ package com.github.jacobbishopxy.theory.introduction
  * There are three important components to the type class pattern: the type class itself, instances for
  * particular types, and the interface methods that we expose to users.
  */
-object AnatomyOfATypeClass extends App {
+object AnatomyOfATypeClass {
 
   /**
    * 1. The Type Class

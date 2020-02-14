@@ -125,7 +125,7 @@ object ExerciseAllSetForMonoids {
 
   // Set intersection forms a semigroup, but doesn't form a monoid because it has no identity element:
 
-  implicit def setIntersectionSemigroup[A]: Semigroup[Set[A]] =
+  def setIntersectionSemigroup[A]: Semigroup[Set[A]] =
     (a: Set[A], b: Set[A]) => a.intersect(b)
 
   /**
@@ -134,7 +134,7 @@ object ExerciseAllSetForMonoids {
    * with the empty set:
    */
 
-  implicit def symDiffMonoid[A]: Monoid[Set[A]] =
+  def symDiffMonoid[A]: Monoid[Set[A]] =
     new Monoid[Set[A]] {
       override def empty: Set[A] = Set.empty
       override def combine(x: Set[A], y: Set[A]): Set[A] =

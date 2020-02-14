@@ -4,7 +4,7 @@ package com.github.jacobbishopxy.theory.functors
  * Created by jacob on 2/3/2020
  *
  */
-object FunctorsInCats extends App {
+object FunctorsInCats {
 
   // 1. the type class
 
