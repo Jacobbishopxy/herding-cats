@@ -44,6 +44,6 @@ object S4 {
 
   val x: Conjunction = List(true, false, true).foldMap(Conjunction(_))
 
-  x.unwrap // false
+  val xu: Boolean = x.unwrap // false
 
 }
