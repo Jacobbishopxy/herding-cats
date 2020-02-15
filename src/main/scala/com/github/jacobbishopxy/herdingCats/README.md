@@ -66,6 +66,10 @@
     
 7. day 6
 
+    - Writer datatype
+    
+    - Reader datatype
+
 8. day 7
 
 9. day 8
