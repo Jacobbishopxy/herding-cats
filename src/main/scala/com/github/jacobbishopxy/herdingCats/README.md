@@ -72,6 +72,12 @@
 
 8. day 7
 
+    - State datatype
+    
+    - Validated datatype
+    
+    - Ior datatype
+
 9. day 8
 
 10. day 9
