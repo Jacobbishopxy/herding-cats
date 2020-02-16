@@ -18,6 +18,10 @@ my study note: [CatsStudyNote](docs/CatsStudyNote.md)
 
 [README](src/main/scala/com/github/jacobbishopxy/herdingCats/README.md)
 
+### case studies
+
+[README](src/main/scala/com/github/jacobbishopxy/caseStudies/README.md)
+
 ## Note
 
 ### Cats Typeclass cheat sheet
