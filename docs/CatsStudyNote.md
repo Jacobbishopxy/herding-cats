@@ -6,6 +6,9 @@
 
 1. 理解Type class
     - type class模式的定义与构成
+        1. type class本身
+        2. type class实例（instance）
+        3. type class接口（interface）
     - type class 与 CATS
     - type class的Scala语法
     - 扩展：使用simulacrum构建type class
