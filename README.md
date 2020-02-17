@@ -10,19 +10,23 @@ my study note: [CatsStudyNote](docs/CatsStudyNote.md)
 
 ## Content
 
-### theory
+1. [theory](src/main/scala/com/github/jacobbishopxy/theory/README.md)
 
-[README](src/main/scala/com/github/jacobbishopxy/theory/README.md)
+2. [herding cats](src/main/scala/com/github/jacobbishopxy/herdingCats/README.md)
 
-### herding cats
-
-[README](src/main/scala/com/github/jacobbishopxy/herdingCats/README.md)
-
-### case studies
-
-[README](src/main/scala/com/github/jacobbishopxy/caseStudies/README.md)
+3. [case studies](src/main/scala/com/github/jacobbishopxy/caseStudies/README.md)
 
 ## Note
+
+### Abstract implementations patterns
+
+`Functor`: mapping
+
+`Applicative`: zipping
+
+`Monad`: sequencing
+
+`Traverse`: iteration
 
 ### Cats Typeclass cheat sheet
 
@@ -57,9 +61,7 @@ my study note: [CatsStudyNote](docs/CatsStudyNote.md)
 |SemigroupK|`combine`|`F[A] => F[A] => F[A]`|
 |Cartesian|`product`|`F[A] => F[B] => F[(A, B)]`|
 
-### Others
-
-Monad type class hierarchy:
+### Monad type class hierarchy
 
 ```
 
@@ -78,7 +80,7 @@ Applicative          FlatMap
             Monad
 ```
 
-Cats type class view:
+### Cats type class view:
 
 thanks to tpolecat's [project](https://github.com/tpolecat/cats-infographic)
 

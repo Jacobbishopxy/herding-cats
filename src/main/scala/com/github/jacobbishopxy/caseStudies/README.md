@@ -7,6 +7,17 @@
 
 2. Abstracting Over Monads
 
+### Summary
+
+This case study provides an example of how Cats can help us abstract over different computational scenarios. We used
+the `Applicative` type class to abstract over asynchronous and synchronous code. Leaning on a functional abstraction
+allows us to specify the sequence of computations we want to perform without worrying about the details of the
+implementation.
+
+Type classes like `Functor`, `Applicative`, `Monad`, and `Traverse` provide abstract implementations of patterns 
+such as mapping, zipping, sequencing, and iteration. The mathematical laws on those types ensure that they work 
+together with a consistent set of semantics.
+
 ## 2. Map-Reduce
 
 ## 3. Data Validation
