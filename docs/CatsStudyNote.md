@@ -389,11 +389,11 @@
 
 6. ArrowChoice
 
-### Simplifications
+#### Simplifications
 
 - 用`A, B, C`来表示类型变量`*`，用`F, G, H`用来表示高阶类型变量。
 
-- 用科里化表示类型签名：每次传入一个参数，他们之间用箭头`=>`分割。Scala中，一个方法的参数有可能被分割成多个以逗号区分的数组。
+- 用科里化结构表示类型签名：每次传入一个参数，他们之间用箭头`=>`分割。Scala中，一个方法的参数有可能被分割成多个以逗号区分的数组。
 
 - 在type-class trait（如`trait Functor`），或是伴生对象，或是语法伴生类（如`implicit class`）上，各种方法保持一致。
 
@@ -403,8 +403,7 @@
 
 - 使用`A => B`表达`Function1[A, B]`和`PartialFunction[A, B]`参数，表中用`PartialFunction`列表示。
 
-- 忽略个别使用[Partially Applied Type Params](https://typelevel.org/cats/guidelines.html#partially-applied-type-params)
-定义的函数。
+- 忽略个别使用[Partially Applied Type Params](https://typelevel.org/cats/guidelines.html#partially-applied-type-params)定义的函数。
 
 - 忽略`by-name`和`by-value`的入参差异。用`=> A`表示无入参的产量函数。
 

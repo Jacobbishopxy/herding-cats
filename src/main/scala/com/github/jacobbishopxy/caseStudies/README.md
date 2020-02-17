@@ -20,6 +20,20 @@ together with a consistent set of semantics.
 
 ## 2. Map-Reduce
 
+1. Parallelizing map and fold
+
+2. Implementing foldMap
+
+3. Parallelising foldMap
+
+    - Futures, Thread Pools, and ExecutionContexts
+    
+    - Dividing Work
+    
+    - Implementing parallelFoldMap
+    
+    - parallelFoldMap with more Cats
+
 ## 3. Data Validation
 
 ## 4. CRDTs
