@@ -42,7 +42,7 @@ object DefiningCustomMonads {
    */
 }
 
-object Exercise {
+object ExerciseDefiningCustomMonads {
 
   // Branching our Further with Monads
   // Let's write a Monad for our Tree data type from last chapter. Here's the type again:

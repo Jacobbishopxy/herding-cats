@@ -6,7 +6,7 @@ package com.github.jacobbishopxy.herdingCats.day0
  *
  * 3. FoldLeft
  */
-object S3 extends App {
+object S3 {
 
   import S2.{Monoid, multiMonoid}
 
