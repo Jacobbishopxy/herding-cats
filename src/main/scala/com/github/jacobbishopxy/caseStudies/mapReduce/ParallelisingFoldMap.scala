@@ -29,8 +29,8 @@ object ParallelisingFoldMap {
    * ExecutionContext in scope:
    */
 
-  import scala.concurrent.Future
   import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent.Future
 
   val future1: Future[Int] = Future {
     (1 to 100).toList.foldLeft(0)(_ + _)
@@ -66,8 +66,8 @@ object ParallelisingFoldMap {
 
   // or an instance of `Traverse`:
 
-  import cats.instances.future._ // for Applicative
-  import cats.instances.list._ // for Traverse
+  import cats.instances.future._
+  import cats.instances.list._
   import cats.syntax.traverse._ // for sequence
 
   List(Future(1), Future(2), Future(3)).sequence
@@ -82,9 +82,9 @@ object ParallelisingFoldMap {
 
   // There are also Monad and Monoid implementations for `Future` available from `cats.instances.future`:
 
-  import cats.{Monad, Monoid}
-  import cats.instances.int._ // for Monoid
-  import cats.instances.future._ // for Monad and Monoid
+  import cats.instances.future._
+  import cats.instances.int._
+  import cats.{Monad, Monoid} // for Monad and Monoid
 
   Monad[Future].pure(42)
   Monoid[Future[Int]].combine(Future(1), Future(2))
@@ -118,7 +118,10 @@ object ImplementingParallelFoldMap {
    */
 
   import cats.Monoid
-  import scala.concurrent.Future
+  import cats.syntax.semigroup._ // |+|
+
+  import scala.concurrent.{Await, ExecutionContext, Future}
+
 
   def parallelFoldMap0[A, B: Monoid](values: Vector[A])(func: A => B): Future[B] = ???
 
@@ -129,4 +132,79 @@ object ImplementingParallelFoldMap {
    * For bonus points, process the batches for each CPU using your implementation of foldMap from above.
    */
 
+  import ImplementingFoldMap.foldMap
+
+  def parallelFoldMap[A, B: Monoid](values: Vector[A])(func: A => B)
+                                   (implicit ect: ExecutionContext): Future[B] = {
+    // Calculate the number of items to pass to each CPU:
+    val cores = Runtime.getRuntime.availableProcessors
+    val size = (values.size.toDouble / cores).ceil.toInt
+
+    // Create one group for each CPU:
+    val groups = values.grouped(size)
+
+    // Create a future to foldMap each group:
+    val futures: Iterator[Future[B]] = groups.map { g =>
+      Future { foldMap(g, func) }
+    }
+
+    // foldMap over the groups to calculate a final result:
+    Future.sequence(futures).map { iter =>
+      iter.foldLeft(Monoid[B].empty)(_ |+| _)
+    }
+  }
+
+
+  // test
+
+  import cats.instances.int._ // Monoid[Int]
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent.duration._
+
+  val result: Future[Int] = parallelFoldMap((1 to 1000000).toVector)(identity)
+  Await.result(result, 1.second)
+
+}
+
+object ParallelFoldMapWithMoreCats {
+
+  /**
+   * 4. parallelFoldMap with more Cats
+   *
+   * Although we implemented `foldMap` ourselves above, the method is also available as part of the `Foldable` type
+   * class. Reimplement `parallelFoldMap` using Cats' `Foldable` and `Traversable` type class.
+   */
+
+  import cats.Monoid
+  import cats.instances.future._ // Applicative and Monad
+  import cats.instances.vector._ // Foldable and Traverse
+  import cats.syntax.foldable._
+  import cats.syntax.traverse._
+
+  import scala.concurrent.{ExecutionContext, Future, Await}
+
+  def parallelFoldMap[A, B: Monoid](values: Vector[A])(func: A => B)
+                                   (implicit ect: ExecutionContext): Future[B] = {
+
+    val cores = Runtime.getRuntime.availableProcessors
+    val size = (values.size.toDouble / cores).ceil.toInt
+
+    values
+      .grouped(size)
+      .toVector
+      .traverse(g => Future(g.foldMap(func)))
+      .map(_.combineAll)
+  }
+
+
+  // test
+
+  import cats.instances.int._ // Monoid[Int]
+  import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent.duration._
+
+  val result: Future[Int] = parallelFoldMap((1 to 100000).toVector)(_ * 1000)
+
+  Await.result(result, 1.second)
 }

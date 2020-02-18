@@ -37,15 +37,14 @@ object ImplementingFoldMap {
 
 }
 
-
-object ImplementingFoldMapTest extends App {
-
-  import ImplementingFoldMap.foldMap
-
-  import cats.instances.string._
-
-  val f: Int => String = (v: Int) => (v * 2).toString + "!"
-
-  println(foldMap(Vector(1, 2, 3), f))
-
-}
+//object ImplementingFoldMapTest extends App {
+//
+//  import ImplementingFoldMap.foldMap
+//
+//  import cats.instances.string._
+//
+//  val f: Int => String = (v: Int) => (v * 2).toString + "!"
+//
+//  println(foldMap(Vector(1, 2, 3), f))
+//
+//}
