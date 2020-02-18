@@ -59,5 +59,23 @@ day-to-day analyses can be cast as monoids. There are monoids for all the follow
 
 ## 3. Data Validation
 
+1. Sketching the Library Structure
+
+2. The Check Datatype
+
+3. Basic Combinators
+
+4. Transforming Data
+
+    - Predicates
+    
+    - Checks
+    
+    - Recap
+
+5. Kleislis
+
+### Summary
+
 ## 4. CRDTs
 
