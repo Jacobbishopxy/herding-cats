@@ -260,3 +260,243 @@ object TransformingDataP4 {
 
 }
 
+object TransformingDataP5 {
+
+  /**
+   * 3. Recap
+   *
+   * We now have two algebraic data types, `Predicate` and `Check`, and a host of combinators with their associated
+   * case class implementations. Look at the following solution for a complete definition of each ADT.
+   *
+   * Here's our final implementation, including some tidying and repackaging of the code:
+   */
+
+  import cats.Semigroup
+  import cats.data.Validated
+  import cats.data.Validated._ // for Valid and Invalid
+  import cats.syntax.apply._ // for mapN
+  import cats.syntax.validated._ // for Valid and Invalid
+  import cats.syntax.semigroup._ // for |+|
+
+  /**
+   * Here is our complete implementation of `Predicate`, including the `and` and `or` combinators and a `Predicate.apply`
+   * method to create a `Predicate` from a function:
+   */
+
+  sealed trait Predicate[E, A] {
+
+    import Predicate._
+
+    def and(that: Predicate[E, A]): Predicate[E, A] =
+      And(this, that)
+
+    def or(that: Predicate[E, A]): Predicate[E, A] =
+      Or(this, that)
+
+    def apply(a: A)(implicit s: Semigroup[E]): Validated[E, A] =
+      this match {
+        case Pure(func) => func(a)
+        case And(left, right) => (left(a), right(a)).mapN((_, _) => a)
+        case Or(left, right) =>
+          left(a) match {
+            case Valid(_) => Valid(a)
+            case Invalid(e1) =>
+              right(a) match {
+                case Valid(_) => Valid(a)
+                case Invalid(e2) => Invalid(e1 |+| e2)
+              }
+          }
+      }
+  }
+
+  object Predicate {
+    final case class And[E, A](left: Predicate[E, A],
+                               right: Predicate[E, A]) extends Predicate[E, A]
+
+    final case class Or[E, A](left: Predicate[E, A],
+                              right: Predicate[E, A]) extends Predicate[E, A]
+
+    final case class Pure[E, A](func: A => Validated[E, A]) extends Predicate[E, A]
+
+    def apply[E, A](f: A => Validated[E, A]): Predicate[E, A] = Pure(f)
+
+    def lift[E, A](err: E, fn: A => Boolean): Predicate[E, A] =
+      Pure(a => if (fn(a)) a.valid else err.invalid)
+  }
+
+  /**
+   * Here is a complete implementation of `Check`. Due to a type inference bug in Scala's pattern matching, we've
+   * switched to implementing `apply` using inheritance:
+   */
+
+  sealed trait Check[E, A, B] {
+
+    import Check._
+
+    def apply(in: A)(implicit s: Semigroup[E]): Validated[E, B]
+
+    def map[C](f: B => C): Check[E, A, C] =
+      Map[E, A, B, C](this, f)
+
+    def flatMap[C](f: B => Check[E, A, C]): FlatMap[E, A, B, C] =
+      FlatMap[E, A, B, C](this, f)
+
+    def andThen[C](next: Check[E, B, C]): Check[E, A, C] =
+      AndThen[E, A, B, C](this, next)
+  }
+
+  object Check {
+    final case class Map[E, A, B, C](check: Check[E, A, B],
+                                     func: B => C) extends Check[E, A, C] {
+      override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, C] =
+        check(a) map func
+    }
+
+    final case class FlatMap[E, A, B, C](check: Check[E, A, B],
+                                         func: B => Check[E, A, C]) extends Check[E, A, C] {
+      override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, C] =
+        check(a).withEither(_.flatMap(b => func(b)(a).toEither))
+    }
+
+    final case class AndThen[E, A, B, C](check: Check[E, A, B],
+                                         next: Check[E, B, C]) extends Check[E, A, C] {
+      override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, C] =
+        check(a).withEither(_.flatMap(b => next(b).toEither))
+    }
+
+    final case class Pure[E, A, B](func: A => Validated[E, B]) extends Check[E, A, B] {
+      override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, B] =
+        func(a)
+    }
+
+    final case class PurePredicate[E, A](pred: Predicate[E, A]) extends Check[E, A, A] {
+      override def apply(a: A)(implicit s: Semigroup[E]): Validated[E, A] =
+        pred(a)
+    }
+
+    def apply[E, A](pred: Predicate[E, A]): Check[E, A, A] =
+      PurePredicate(pred)
+
+    def apply[E, A, B](func: A => Validated[E, B]): Check[E, A, B] =
+      Pure(func)
+  }
+
+  /**
+   * We have a complete implementation of `Check` and `Predicate` that do most of what we originally set out to do.
+   * However, we are not finished yet. You have probably recognised structure in `Predicate` and `Check` that we
+   * can abstract over: `Predicate` has a monoid and `Check` has a monad, Furthermore, in implementing `Check` you
+   * might have felt the implementation doesn't do much -- all we do is call through to underlying methods on
+   * `Predicate` and `Validated`.
+   */
+}
+
+object TransformingDataP6 {
+
+  /** There are a lot of ways this library could be cleaned up. However, let's implement some examples to prove to
+   * ourselves that our library really does work, and then we'll turn to improving it.
+   *
+   * Implement checks for some of the examples given in the introduction:
+   *
+   * - A username must contain at least four characters and consist entirely of alphanumeric characters
+   * - An email address must contain an @ sign. Split the string at the @. The string to the left must not be empty.
+   * The string to the right must be at least three characters long and contain a dot.
+   *
+   * You might find the following predicates useful:
+   */
+
+  import cats.data.NonEmptyList
+
+  import TransformingDataP5.Predicate
+
+  type Errors = NonEmptyList[String]
+
+  def error(s: String): NonEmptyList[String] =
+    NonEmptyList(s, Nil)
+
+  def longerThan(n: Int): Predicate[Errors, String] =
+    Predicate.lift(
+      error(s"Must be longer than $n characters"),
+      str => str.length > n
+    )
+
+  def alphanumeric: Predicate[Errors, String] =
+    Predicate.lift(
+      error(s"Must be all alphanumeric characters"),
+      str => str.forall(_.isLetterOrDigit)
+    )
+
+  def contains(char: Char): Predicate[Errors, String] =
+    Predicate.lift(
+      error(s"Must contain the character $char"),
+      str => str.contains(char)
+    )
+
+  def containsOnce(char: Char): Predicate[Errors, String] =
+    Predicate.lift(
+      error(s"Must contain the character $char only once"),
+      str => str.filter(c => c == char).length == 1
+    )
+
+  /**
+   * Here's our reference solution. Implementing this required more thought than we expected. Switching between `Check`
+   * and `Predicate` at appropriate places felt a bit like guesswork till we got the rule into our heads that `Predicate`
+   * doesn't transform its input. With this rule in mind things went fairly smoothly. In later sections we'll make some
+   * changes that make the library easier to use.
+   */
+
+  import cats.data.Validated
+  import cats.syntax.apply._ // for mapN
+  import cats.syntax.validated._ // for valid and invalid
+
+  import TransformingDataP5.Check
+
+  // Here's the implementation of `checkUsername`:
+
+  val checkUsername: Check[Errors, String, String] =
+    Check(longerThan(3) and alphanumeric)
+
+  // And here's the implementation of `checkEmail`, built up from a number of smaller components:
+
+  val splitEmail: Check[Errors, String, (String, String)] =
+    Check(_.split('@') match {
+      case Array(name, domain) =>
+        (name, domain).validNel[String]
+      case _ =>
+        "Must contain a single @ character".invalidNel[(String, String)]
+    })
+
+  val checkLeft: Check[Errors, String, String] =
+    Check(longerThan(0))
+
+  val checkRight: Check[Errors, String, String] =
+    Check(longerThan(3) and contains('.'))
+
+  val joinMail: Check[Errors, (String, String), String] =
+    Check { case (l, r) =>
+      (checkLeft(l), checkRight(r)).mapN(_ + "@" + _)
+    }
+
+  val checkEmail: Check[Errors, String, String] =
+    splitEmail andThen joinMail
+
+  // Finally, here's a check for a User that depends on checkUsername and checkEmail:
+
+  final case class User(username: String, email: String)
+
+  def createUser(username: String,
+                 email: String): Validated[Errors, User] =
+    (checkUsername(username), checkEmail(email)).mapN(User)
+
+
+  // We can check our work by creating a couple of example users:
+
+  createUser("Jacob", "jacob@example.com")
+
+  createUser("", "sam@example@com")
+
+  /**
+   * One distinct disadvantage of our example is that it doesn't tell us where the errors came from. We can either
+   * achieve that through judicious manipulation of error messages, or we can modify our library to track error
+   * locations as well as message.
+   */
+}
