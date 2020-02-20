@@ -147,9 +147,9 @@
     - Traverse
         - 更高级别的抽象相比于`Foldable`，运用`Applicative`的遍历操作（最强大的模式！）
         - 逻辑：
-            0. 前提：`F`有`Traverse`实例，以及`G`有`Applicative`实例
-            1. traverse: `(G[A], A => F[B]) => F[G[B]]`
-            2. sequence: `G[F[A]] => F[G[A]]`
+            - 前提：`F`有`Traverse`实例，以及`G`有`Applicative`实例
+            - traverse: `(G[A], A => F[B]) => F[G[B]]`
+            - sequence: `G[F[A]] => F[G[A]]`
 
 ## Cats库模块
 

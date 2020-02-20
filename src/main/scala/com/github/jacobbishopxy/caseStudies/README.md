@@ -1,11 +1,11 @@
 # Case Studies
 
 
-## 1. Testing Asynchronous Code
+## 1. [Testing Asynchronous Code](testingAsynchronousCode/TestingAsynchronousCode.scala)
 
-1. Abstracting Over Type Constructors
+1. [Abstracting Over Type Constructors](testingAsynchronousCode/AbstractingOverTypeConstructors.scala)
 
-2. Abstracting Over Monads
+2. [Abstracting Over Monads](testingAsynchronousCode/AbstractingOverMonads.scala)
 
 ### Summary
 
@@ -20,11 +20,11 @@ together with a consistent set of semantics.
 
 ## 2. Map-Reduce
 
-1. Parallelizing map and fold
+1. [Parallelizing map and fold](mapReduce/ParallelizingMapAndFold.scala)
 
-2. Implementing foldMap
+2. [Implementing foldMap](mapReduce/ImplementingFoldMap.scala)
 
-3. Parallelising foldMap
+3. [Parallelising foldMap](mapReduce/ParallelisingFoldMap.scala)
 
     - Futures, Thread Pools, and ExecutionContexts
     
@@ -59,13 +59,13 @@ day-to-day analyses can be cast as monoids. There are monoids for all the follow
 
 ## 3. Data Validation
 
-1. Sketching the Library Structure
+1. [Sketching the Library Structure](dataValidation/SketchingTheLibraryStructure.scala)
 
-2. The Check Datatype
+2. [The Check Datatype](dataValidation/TheCheckDatatype.scala)
 
-3. Basic Combinators
+3. [Basic Combinators](dataValidation/BasicCombinators.scala)
 
-4. Transforming Data
+4. [Transforming Data](dataValidation/TransformingData.scala)
 
     - Predicates
     
@@ -73,9 +73,13 @@ day-to-day analyses can be cast as monoids. There are monoids for all the follow
     
     - Recap
 
-5. Kleislis
+5. [Kleislis](dataValidation/Kleislis.scala)
 
 ### Summary
+
+This case study has been an exercise in removing rather than building abstractions. We started with a fairly complex 
+`Check` type. Once we realised we were conflating two concepts, we separated out `Predicate` leaving us with something
+that could be implemented with `Kleisli`.
 
 ## 4. CRDTs
 
