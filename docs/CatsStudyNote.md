@@ -151,6 +151,18 @@
             - traverse: `(G[A], A => F[B]) => F[G[B]]`
             - sequence: `G[F[A]] => F[G[A]]`
 
+6. Free Applicatives
+
+7. Free Monads
+    - 一个自由单子FreeMonad是一种结构，允许从任何函子Functor构建出单子Monad。
+        1. 将有状态的计算表达为数据
+        2. 以堆栈安全的方式进行递归计算
+        3. 构建嵌入式的DSL
+        4. 用一种自然的方式将计算重新定位到一个解释器上
+    - 数学原理
+        
+
+
 ## Cats库模块
 
 ### Type Class

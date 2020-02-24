@@ -171,7 +171,7 @@ object UsingFreeMonads extends App {
    * To run your `Free` with previous `impureCompiler`:
    */
 
-//  val result: Option[Int] = program.foldMap(impureCompiler)
+  //  val result: Option[Int] = program.foldMap(impureCompiler)
 
   /**
    * An important aspect of `foldMpa` is its stack-safety. It evaluates each step of computation on the stack then
@@ -209,6 +209,99 @@ object UsingFreeMonads extends App {
 
 
 object ComposingFreeMonadsADTs extends App {
+
+  /**
+   * Real world applications often time combine different algebras.
+   *
+   * Let's see a trivial example of unrelated ADT's getting composed as a `EitherK` that can form a more complex
+   * program.
+   */
+
+  import cats.data.EitherK
+  import cats.free.Free
+  import cats.{Id, InjectK, ~>}
+  import scala.collection.mutable.ListBuffer
+
+  // Handles user interaction
+  sealed trait Interact[A]
+  case class Ask(prompt: String) extends Interact[String]
+  case class Tell(msg: String) extends Interact[Unit]
+
+  // Represents persistence operations
+  sealed trait DataOp[A]
+  case class AddCat(a: String) extends DataOp[Unit]
+  case class GetAllCats() extends DataOp[List[String]]
+
+  // Once the ADTs are defined we can formally state that a `Free` program is the EitherK of its Algebras.
+  type CatsApp[A] = EitherK[DataOp, Interact, A]
+
+  // In order to take advantage of monadic composition we use smart constructors to lift our Algebra to
+  // the `Free` context.
+  class Interacts[F[_]](implicit I: InjectK[Interact, F]) {
+    def tell(msg: String): Free[F, Unit] = Free.inject[Interact, F](Tell(msg))
+
+    def ask(prompt: String): Free[F, String] = Free.inject[Interact, F](Ask(prompt))
+  }
+
+  object Interacts {
+    implicit def interacts[F[_]](implicit I: InjectK[Interact, F]): Interacts[F] =
+      new Interacts[F]
+  }
+
+  class DataSource[F[_]](implicit I: InjectK[DataOp, F]) {
+    def addCat(a: String): Free[F, Unit] = Free.inject[DataOp, F](AddCat(a))
+
+    def getAllCats: Free[F, List[String]] = Free.inject[DataOp, F](GetAllCats())
+  }
+
+  object DataSource {
+    implicit def dataSource[F[_]](implicit I: InjectK[DataOp, F]): DataSource[F] =
+      new DataSource[F]
+  }
+
+  // ADTs are now easily composed and trivially intertwined inside monadic contexts.
+  def program(implicit I: Interacts[CatsApp], D: DataSource[CatsApp]): Free[CatsApp, Unit] = {
+    import I._, D._
+
+    for {
+      cat <- ask("What's the kitty's name?")
+      _ <- addCat(cat)
+      cats <- getAllCats
+      _ <- tell(cats.toString)
+    } yield ()
+  }
+
+  // Finally we write one interpreter per ADT and combine them with a `FunctionK` to `EitherK` so they can
+  // be compiled and applied to our `Free` program.
+  object ConsoleCatsInterpreter extends (Interact ~> Id) {
+    override def apply[A](fa: Interact[A]): Id[A] = fa match {
+      case Ask(prompt) =>
+        println(prompt)
+        scala.io.StdIn.readLine
+      case Tell(msg) =>
+        println(msg)
+    }
+  }
+
+  object InMemoryDatasourceInterpreter extends (DataOp ~> Id) {
+    private[this] val memDataSet = new ListBuffer[String]
+
+    override def apply[A](fa: DataOp[A]): Id[A] = fa match {
+      case AddCat(a) =>
+        memDataSet.append(a)
+        ()
+      case GetAllCats() =>
+        memDataSet.toList
+    }
+  }
+
+  val interpreter: CatsApp ~> Id = InMemoryDatasourceInterpreter or ConsoleCatsInterpreter
+
+  // Now if we run our program and type in "snuggles" when prompted, we see something like this:
+  import DataSource._
+  import Interacts._
+
+  val evaled: Unit = program.foldMap(interpreter)
 
 }
 
