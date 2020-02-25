@@ -31,56 +31,8 @@
 1. Monoids与Semigroups（幺半群与半群）
     - 定义与使用
     - 用途说明
-    
+
 2. Functors（函子）
-    - 定义与使用
-    - 使用方法
-    - 形变（variance）的函子（前置：Scala的形变）
-        1. 协变（covariant）
-            - `map`
-        2. 逆变（contravariant）
-            - `contramap`: `def contramap[A, B](fa: F[A])(f: B => A): F[B]`
-        3. 不变（invariant）
-            - `imap`: `def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B]`
-    
-3. Monads（单子）
-    - 定义与使用
-    - 5种实用Monad
-        - Identity：类型的别名，功能：原子类型 -> 单个参数类型构造函数
-        - Eval：求值类型的抽象，包含3个子类
-            - `Eval.now`：与Scala的`val`对应（立即求值并储存）
-            - `Eval.later`：与Scala的`lazy val`对应（调用计算并储存）
-            - `Eval.always`：与Scala的`def`对应（调用计算不储存）
-        - Writer：携带log并计算
-            - `Writer[W, A]`携带`W`日志类型以及类型`A`的计算
-        - Reader：用于序列化依赖某相同输入的一系列函数（可用于依赖注入）
-            - `Reader[A, B]`接受`A=>B`函数作为参数
-        - State：携带状态（input state转换为output state）与计算，以纯函数方式模拟mutable state
-            - `State[S, A]`实例代表`S => (S, A)`函数，`S`为状态类型，`A`为计算类型
-            - 5种构造器：
-                1. `State.get`：提取并返回state
-                2. `State.set`：更新state返回unit
-                3. `State.pure`：忽略state返回已提供的结果
-                4. `State.inspect`：提取state后通过转换函数返回
-                5. `State.modify`：通过更新函数更新state返回unit
-    - 自定义Monad
-        - 实现：
-            1. `flatMap`
-            2. `pure`
-            3. `tailRecM`
-    
-4. Monad Transformers （单子转换）
-    - 未整理
-    
-5. Semigroupal and Applicative 
-    - 未整理
-    
-6. Foldable and Traverse
-    - 未整理
-
-## 概念
-
-1. Functor
     - 构成：
         1. `F[A]`
         2. `map`函数：`(A => B) => F[B]`
@@ -88,8 +40,16 @@
         1. Identity：单位元法则`fa.map(a => a) == fa`，其中`a => a`即identity函数
         2. Composition：组合法则`fa.map(g(f(_))) == fa.map(f).map(g)`
     - 功能：实现`F[A]`到`F[B]`的转换，保持context（即`F`）不变
-    
-2. Monad
+    - 函子可以独立地转换高阶对象中的每个元素，所以可以进行并行计算
+    - 形变（variance）的函子（前置：Scala的形变）
+        1. 协变（covariant）
+            - `map`
+        2. 逆变（contravariant）
+            - `contramap`: `def contramap[A, B](fa: F[A])(f: B => A): F[B]`
+        3. 不变（invariant）
+            - `imap`: `def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B]`
+
+3. Monads（单子）
     - 构成：
         1. `pure`函数：`A => F[A]`，即通过plain value创建一个monadic context（即`F[_]`）
         2. `flatMap`函数：`(F[A], A => F[B]) => F[B]`，即从monadic context中提取值，然后产生一个新的monadic context
@@ -102,12 +62,60 @@
         2. 将已经解除包裹的值输入函数`A => B`
         3. 一个被重新包裹的值被输出`B => F[B]`
     - 扩展：for表达式是对于序列化的flatMap与map整合而进行序列化的操作
-    
-3. Monad Transformer
+    - 5种实用Monad
+        1. Identity：类型的别名，功能：原子类型 -> 单个参数类型构造函数
+        2. Eval：求值类型的抽象，包含3个子类
+            - `Eval.now`：与Scala的`val`对应（立即求值并储存）
+            - `Eval.later`：与Scala的`lazy val`对应（调用计算并储存）
+            - `Eval.always`：与Scala的`def`对应（调用计算不储存）
+        3. Writer：携带log并计算
+            - `Writer[W, A]`携带`W`日志类型以及类型`A`的计算
+        4. Reader：用于序列化依赖某相同输入的一系列函数（可用于依赖注入）
+            - `Reader[A, B]`接受`A=>B`函数作为参数
+        5. State：携带状态（input state转换为output state）与计算，以纯函数方式模拟mutable state
+            - `State[S, A]`实例代表`S => (S, A)`函数，`S`为状态类型，`A`为计算类型
+            - 5种方法：
+                1. `State.get`：提取并返回state
+                2. `State.set`：更新state返回unit
+                3. `State.pure`：忽略state返回已提供的结果
+                4. `State.inspect`：提取state后通过转换函数返回
+                5. `State.modify`：通过更新函数更新state返回unit
+    - 自定义Monad
+        1. `pure`：定义有效包装，即运算停止的最终节点
+        2. `flatMap`：定义值转换再包装context的过程
+        3. `tailRecM`：用于优化flatMap嵌套调用所消耗的占空间，推荐尾递归
+
+4. Monad Transformers （单子转换）
     - 每一种Transformer都是一种数据类型，定义在`cats.data`
     - 多个Monad实例嵌套转化为一个新的Monad实例
-    
-4. Semigroupal and Applicative
+    - 用于解决Monads嵌套使用for表达式、模式匹配时，也需要嵌套的问题。
+    - 重要概念：
+        1. 可用的Transformer类
+        2. 如何使用transformers构建嵌套的monad
+        3. 如何构造嵌套monad的实例
+        4. 如何分离嵌套monad去使用被包裹的monad
+    - 结构解析（采用由内而外的顺序构建）：
+        1. transformer本身，即inner monad
+        2. 第一个类型参数，即outer monad
+        3. 第二个类型参数，即最深层monad context中的值类型
+        4. 若有两个以上的类型参数，需要为中间步骤定义类型别名，例：
+           ```
+           type EitherOption[A] = OptionT[Either[*, *], A] // 无法实现
+           
+           
+           type ErrorOr[A] = Either[String, A] // 需要固定Either其中一个类型（如String），将其转换为只有一个类型参数的结构。
+           type ErrorOrOption[A] = OptionT[ErrorOr, A]
+           ```
+    - 常用的transformers
+        1. OptionT
+        2. EitherT
+        3. ReaderT
+        4. WriterT
+        5. StateT
+        6. IdT
+
+5. Semigroupal and Applicative 
+    - 未整理
     - Semigroupal
         - 构成：
             1. `product`函数：`(F[A], F[B]) => F[(A, B)]`，`fa`与`fb`相互独立，即可以以任意顺序计算
@@ -135,8 +143,9 @@
             - `Applicative`：在`Apply`基础上添加`pure`函数
             - `Monoid`：在`Semigroup`基础上添加`empty`函数
             - 其中：`pure`与`empty`概念类似
-            
-5. Foldable and Traverse
+
+6. Foldable and Traverse
+    - 未整理
     - Foldable
         - 抽象`foldLef`和`foldRight`操作
         - `foldLeft`实现：`def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B`
@@ -151,9 +160,10 @@
             - traverse: `(G[A], A => F[B]) => F[G[B]]`
             - sequence: `G[F[A]] => F[G[A]]`
 
-6. Free Applicatives
+7. Free Applicatives
+    - 未整理
 
-7. Free Monads
+8. Free Monads
     - 一个自由单子FreeMonad是一种结构，允许从任何函子Functor构建出单子Monad。
         1. 将有状态的计算表达为数据
         2. 以堆栈安全的方式进行递归计算
