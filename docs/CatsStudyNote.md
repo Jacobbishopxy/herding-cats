@@ -102,8 +102,11 @@
            ```
            type EitherOption[A] = OptionT[Either[*, *], A] // 无法实现
            
-           
-           type ErrorOr[A] = Either[String, A] // 需要固定Either其中一个类型（如String），将其转换为只有一个类型参数的结构。
+           /**
+            * 正确做法：
+            * 固定Either其中一个类型（如String），将其转换为只有一个类型参数的结构。
+            */
+           type ErrorOr[A] = Either[String, A] // 
            type ErrorOrOption[A] = OptionT[ErrorOr, A]
            ```
     - 常用的transformers

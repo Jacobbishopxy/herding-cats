@@ -298,10 +298,161 @@ object ComposingFreeMonadsADTs extends App {
   val interpreter: CatsApp ~> Id = InMemoryDatasourceInterpreter or ConsoleCatsInterpreter
 
   // Now if we run our program and type in "snuggles" when prompted, we see something like this:
+
   import DataSource._
   import Interacts._
 
   val evaled: Unit = program.foldMap(interpreter)
 
 }
+
+
+/**
+ * Understanding free monads
+ */
+
+object ABusinessCase {
+
+  type Symbol = String
+  type Response = String
+
+  sealed trait Orders[A]
+  case class Buy(stock: Symbol, amount: Int) extends Orders[Response]
+  case class Sell(stock: Symbol, amount: Int) extends Orders[Response]
+
+  import cats.free.Free
+
+  type OrdersF[A] = Free[Orders, A]
+
+  def buy(stock: Symbol, amount: Int): OrdersF[Response] =
+    Free.liftF[Orders, Response](Buy(stock, amount))
+
+  def sell(stock: Symbol, amount: Int): OrdersF[Response] =
+    Free.liftF[Orders, Response](Sell(stock, amount))
+
+  val smartTrade: Free[Orders, Response] = for {
+    _ <- buy("APPL", 50)
+    _ <- buy("MSFT", 10)
+    rsp <- sell("GOOG", 200)
+  } yield rsp
+
+  /**
+   * This code still does nothing else than defining the steps, we have now way to obtain a result from it.
+   * We need a way to execute, or interpret our language.
+   */
+
+}
+
+object OurFirstInterpreter extends App {
+
+  import ABusinessCase._
+
+  /**
+   * An interpreter is something that will read our program and do something with it. Technically an interpreter
+   * is a `natural transformation`. The key thing to know is that an interpreter requires a monad as the end
+   * part of the transformation. This means you can use an interpreter to obtain `Option`, `Xor`, or some other
+   * monad, but not to obtain anything that is not a monad.
+   */
+
+  import cats.{Id, ~>}
+
+  def orderPrinter: Orders ~> Id =
+    new (Orders ~> Id) {
+      override def apply[A](fa: Orders[A]): Id[A] = fa match {
+        case Buy(stock, amount) =>
+          println(s"Buying $amount of $stock")
+          "ok"
+        case Sell(stock, amount) =>
+          println(s"Selling $amount of $stock")
+          "ok"
+      }
+    }
+
+
+  /**
+   * This squiggly sign `~>` is the syntax sugar for `natural transformation`. Note that in the interpreter we do
+   * a pattern match over each member of our language. As `Buy` is of type `Order[Response]` (equivalent to
+   * `Order[String]` in this scenario), the method signature forces us to return a result of `Id[String]`.
+   * The same for `Sell`.
+   *
+   * We are also executing some `println` statements before returning the result. The only restriction given by
+   * the signature is the return type, we can have side effects in our code (as we do in this case). Obviously
+   * this is not advisable, but it can be useful when we create interpreters for testing purposes.
+   *
+   * We have our interpreter, which means that we have all the pieces we need to execute the program. We can do
+   * this via the `foldMap` operation:
+   */
+
+  smartTrade.foldMap(orderPrinter)
+}
+
+object EitherInterpreters extends App {
+
+  import ABusinessCase._
+
+  /**
+   * `Id` is not so useful, and we want to avoid side effects in our code. If we aim to do something akin to railway
+   * oriented programming we may want to use `Either` instead.
+   *
+   * But this reveals a slight issue: the natural transformation expects a monad with shape `G[_]`, and `Either` is
+   * `Either[+A, +B]`. There is a mismatch in the number of holes. Thankfully we can fix that with a small trick,
+   * by fixing the type of the left side of `Either`, like:
+   * `type ErrorOr[A] = Either[String, A]`
+   *
+   * This creates a new monadic type with a single type parameter, which fits the requirements of natural transformation.
+   * You may want to use an ADT instead of `String` on the left side, to make it more flexible. In any case, we can
+   * now construct a new interpreter:
+   */
+
+  type ErrorOr[A] = Either[String, A]
+
+  import cats.~>
+  import cats.syntax.either._
+  import cats.implicits._
+
+  def eitherInterpreter: Orders ~> ErrorOr =
+    new (Orders ~> ErrorOr) {
+      override def apply[A](fa: Orders[A]): ErrorOr[A] = fa match {
+        case Buy(stock, amount) =>
+          s"$stock - $amount".asRight
+        case Sell(stock, amount) =>
+          "Why are you selling that?".asLeft
+
+      }
+    }
+
+  smartTrade.foldMap(eitherInterpreter)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
