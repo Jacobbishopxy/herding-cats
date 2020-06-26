@@ -7,7 +7,7 @@
  * There are five basic steps to "freeing" the ADT:
  *
  * 1. Create a type based on `Free[_]` and `KVStoreA[_]`.
- * 2. Create smart constructors for `KVStore[_]` using `liftE`.
+ * 2. Create smart constructors for `KVStore[_]` using `liftF`.
  * 3. Build a program out of key-value DSL operations.
  * 4. Build a compiler for programs of DSL operations.
  * 5. Execute our compiled program.
@@ -27,6 +27,8 @@ object UsingFreeMonads extends App {
 
   /**
    * 1. Create a `Free` type based on your ADT
+   *
+   * 定义KVStoreA的Free类型投影
    */
 
   import cats.free.Free
@@ -39,22 +41,25 @@ object UsingFreeMonads extends App {
    *
    * These methods will make working with our DSL a lot nicer, and will lift `KVStoreA[_]` values into our `KVStore`
    * monad (not the missing "A" in the second type).
+   *
+   * 通过liftF将KVStoreA的ADT提升到其Free类型的投影，liftF的目的是：
+   * 1. 将计算升级为纯函数，使用不可变的值；
+   * 2. 将程序的创建和执行分离开；
+   * 3. 能够支持许多不同的执行方法。
    */
-
-  import cats.free.Free.liftF
 
   // Put returns nothing (i.e. Unit).
   def put[T](key: String, value: T): KVStore[Unit] =
-    liftF[KVStoreA, Unit](Put[T](key, value))
+    Free.liftF[KVStoreA, Unit](Put[T](key, value))
 
 
   // Get returns a T value.
   def get[T](key: String): KVStore[Option[T]] =
-    liftF[KVStoreA, Option[T]](Get[T](key))
+    Free.liftF[KVStoreA, Option[T]](Get[T](key))
 
   // Delete returns nothing (i.e. Unit).
   def delete(key: String): KVStore[Unit] =
-    liftF(Delete(key))
+    Free.liftF(Delete(key))
 
   // Update composes get and set, and returns nothing.
   def update[T](key: String, f: T => T): KVStore[Unit] =
@@ -70,6 +75,10 @@ object UsingFreeMonads extends App {
    * Now that we can construct `KVStore[_]` values we can use our DSL to write "programs" using a for-comprehension.
    * It looks like a monadic flow. However, it just builds a recursive data structure representing the sequence of
    * operations.
+   *
+   * 关注分离：用DSL来描述业务运算
+   * program看上去貌似一个monadic flow，但是事实上这里只是构建了一个递归运算的结构（分离了关注），也就是说Free只是被用于这些
+   * 嵌入式DSL来构建执行流程的，这个流程并不能被直接执行。如果我们试图允许program，实际上只会得到一个Free[_]结构。
    */
 
   def program: KVStore[Option[Int]] =
@@ -97,7 +106,10 @@ object UsingFreeMonads extends App {
    * types like `F[_]` and `G[_]` (this particular transformation would be written as `FunctionK[F, G]` or as done
    * here using the symbolic alternative as `F ~> G`).
    *
-   * In our case, we will use a simple mutable map to represent our key value store:
+   * In our case, we will use a simple mutable map to represent our key value store.
+   *
+   * 因此接下来我们需要一个能够执行这个流程的“编译器”，也就是实现左伴随F[_] -> G[_]过程，得到真正的Monad。Cats为此提供了一个
+   * FunctionK[F, G]函数（syntax语法为~>）来封装这个过程。
    */
 
   import cats.arrow.FunctionK
@@ -235,8 +247,7 @@ object ComposingFreeMonadsADTs extends App {
   // Once the ADTs are defined we can formally state that a `Free` program is the EitherK of its Algebras.
   type CatsApp[A] = EitherK[DataOp, Interact, A]
 
-  // In order to take advantage of monadic composition we use smart constructors to lift our Algebra to
-  // the `Free` context.
+  // In order to take advantage of monadic composition we use smart constructors to lift our Algebra to the `Free` context.
   class Interacts[F[_]](implicit I: InjectK[Interact, F]) {
     def tell(msg: String): Free[F, Unit] = Free.inject[Interact, F](Tell(msg))
 
@@ -306,153 +317,123 @@ object ComposingFreeMonadsADTs extends App {
 
 }
 
-
-/**
- * Understanding free monads
- */
-
-object ABusinessCase {
-
-  type Symbol = String
-  type Response = String
-
-  sealed trait Orders[A]
-  case class Buy(stock: Symbol, amount: Int) extends Orders[Response]
-  case class Sell(stock: Symbol, amount: Int) extends Orders[Response]
-
-  import cats.free.Free
-
-  type OrdersF[A] = Free[Orders, A]
-
-  def buy(stock: Symbol, amount: Int): OrdersF[Response] =
-    Free.liftF[Orders, Response](Buy(stock, amount))
-
-  def sell(stock: Symbol, amount: Int): OrdersF[Response] =
-    Free.liftF[Orders, Response](Sell(stock, amount))
-
-  val smartTrade: Free[Orders, Response] = for {
-    _ <- buy("APPL", 50)
-    _ <- buy("MSFT", 10)
-    rsp <- sell("GOOG", 200)
-  } yield rsp
+object UsingFreeT extends App {
 
   /**
-   * This code still does nothing else than defining the steps, we have now way to obtain a result from it.
-   * We need a way to execute, or interpret our language.
+   * Often times we want to interleave the syntax tree when building a Free monad with some other effect not declared
+   * as part of the ADT. FreeT solves this problem by allowing us to mix building steps of the AST with calling action
+   * in other base monad.
+   *
+   * In the following example a basic console application is shown. When the user inputs some text we use a separate
+   * `State` monad to track what the user typed.
+   *
+   * As we can observe in this case `FreeT` offers us the alternative to delegate denotations to `State` monad with
+   * stronger equational guarantees than if we were emulating the `State` ops in our own ADT.
    */
 
-}
+  import cats.free._
+  import cats._
+  import cats.data._
 
-object OurFirstInterpreter extends App {
+  // A base ADT for the user interaction without state semantics
+  sealed abstract class Teletype[A] extends Product with Serializable
+  final case class WriteLine(line: String) extends Teletype[Unit]
+  final case class ReadLine(prompt: String) extends Teletype[String]
 
-  import ABusinessCase._
+  type TeletypeT[M[_], A] = FreeT[Teletype, M, A]
+  type Log = List[String]
+  type TeletypeState[A] = State[List[String], A]
 
-  /**
-   * An interpreter is something that will read our program and do something with it. Technically an interpreter
-   * is a `natural transformation`. The key thing to know is that an interpreter requires a monad as the end
-   * part of the transformation. This means you can use an interpreter to obtain `Option`, `Xor`, or some other
-   * monad, but not to obtain anything that is not a monad.
-   */
+  // Teletype smart constructors
+  object TeletypeOps {
+    def writeLine(line: String): TeletypeT[TeletypeState, Unit] =
+      FreeT.liftF[Teletype, TeletypeState, Unit](WriteLine(line))
 
-  import cats.{Id, ~>}
+    def readLine(prompt: String): TeletypeT[TeletypeState, String] =
+      FreeT.liftF[Teletype, TeletypeState, String](ReadLine(prompt))
 
-  def orderPrinter: Orders ~> Id =
-    new (Orders ~> Id) {
-      override def apply[A](fa: Orders[A]): Id[A] = fa match {
-        case Buy(stock, amount) =>
-          println(s"Buying $amount of $stock")
-          "ok"
-        case Sell(stock, amount) =>
-          println(s"Selling $amount of $stock")
-          "ok"
+    def logs(s: String): TeletypeT[TeletypeState, Unit] =
+      FreeT.liftT[Teletype, TeletypeState, Unit](State.modify(s :: _))
+  }
+
+  def program: TeletypeT[TeletypeState, Unit] =
+    for {
+      userSaid <- TeletypeOps.readLine("what's up?!")
+      _ <- TeletypeOps.logs(s"user said:  $userSaid")
+      _ <- TeletypeOps.writeLine("thanks, see you soon!")
+    } yield ()
+
+  def interpreter: Teletype ~> TeletypeState = new (Teletype ~> TeletypeState) {
+    override def apply[A](fa: Teletype[A]): TeletypeState[A] =
+      fa match {
+        case ReadLine(prompt) =>
+          println(prompt)
+          val userInput = "hanging in here"
+          StateT.pure[Eval, List[String], A](userInput)
+        case WriteLine(line) =>
+          StateT.pure[Eval, List[String], A](println(line))
       }
-    }
+  }
 
+  val state = program.foldMap(interpreter)
 
-  /**
-   * This squiggly sign `~>` is the syntax sugar for `natural transformation`. Note that in the interpreter we do
-   * a pattern match over each member of our language. As `Buy` is of type `Order[Response]` (equivalent to
-   * `Order[String]` in this scenario), the method signature forces us to return a result of `Id[String]`.
-   * The same for `Sell`.
-   *
-   * We are also executing some `println` statements before returning the result. The only restriction given by
-   * the signature is the return type, we can have side effects in our code (as we do in this case). Obviously
-   * this is not advisable, but it can be useful when we create interpreters for testing purposes.
-   *
-   * We have our interpreter, which means that we have all the pieces we need to execute the program. We can do
-   * this via the `foldMap` operation:
-   */
+  val initialState = Nil
 
-  smartTrade.foldMap(orderPrinter)
+  val (stored, _) = state.run(initialState).value
+
 }
 
-object EitherInterpreters extends App {
+object UsingFreeT2 extends App {
 
-  import ABusinessCase._
-
-  /**
-   * `Id` is not so useful, and we want to avoid side effects in our code. If we aim to do something akin to railway
-   * oriented programming we may want to use `Either` instead.
-   *
-   * But this reveals a slight issue: the natural transformation expects a monad with shape `G[_]`, and `Either` is
-   * `Either[+A, +B]`. There is a mismatch in the number of holes. Thankfully we can fix that with a small trick,
-   * by fixing the type of the left side of `Either`, like:
-   * `type ErrorOr[A] = Either[String, A]`
-   *
-   * This creates a new monadic type with a single type parameter, which fits the requirements of natural transformation.
-   * You may want to use an ADT instead of `String` on the left side, to make it more flexible. In any case, we can
-   * now construct a new interpreter:
-   */
-
-  type ErrorOr[A] = Either[String, A]
-
-  import cats.~>
-  import cats.syntax.either._
+  import cats.free._
+  import cats._
+  import cats.data._
   import cats.implicits._
+  import scala.util.Try
 
-  def eitherInterpreter: Orders ~> ErrorOr =
-    new (Orders ~> ErrorOr) {
-      override def apply[A](fa: Orders[A]): ErrorOr[A] = fa match {
-        case Buy(stock, amount) =>
-          s"$stock - $amount".asRight
-        case Sell(stock, amount) =>
-          "Why are you selling that?".asLeft
+  sealed trait Ctx[A]
 
+  case class Action(value: Int) extends Ctx[Int]
+
+  def op1: FreeT[Ctx, Option, Int] =
+    FreeT.liftF[Ctx, Option, Int](Action(7))
+
+  def op2: FreeT[Ctx, Option, Int] =
+    FreeT.liftT[Ctx, Option, Int](Some(4))
+
+  def op3: FreeT[Ctx, Option, Int] =
+    FreeT.pure[Ctx, Option, Int](1)
+
+  def opComplete: FreeT[Ctx, Option, Int] =
+    for {
+      a <- op1
+      b <- op2
+      c <- op3
+    } yield a + b + c
+
+
+  type OptTry[A] = OptionT[Try, A]
+
+  def tryInterpreter: Ctx ~> OptTry = new (Ctx ~> OptTry) {
+    override def apply[A](fa: Ctx[A]): OptTry[A] =
+      fa match {
+        case Action(value) => OptionT.liftF(Try(value))
       }
-    }
+  }
 
-  smartTrade.foldMap(eitherInterpreter)
+  def optTryLift: Option ~> OptTry = new (Option ~> OptTry) {
+    override def apply[A](fa: Option[A]): OptTry[A] =
+      fa match {
+        case Some(value) => OptionT(Try(Option(value)))
+        case None => OptionT.none
+      }
+  }
+
+  val hoisted = opComplete.hoist(optTryLift)
+
+  val evaluated = hoisted.foldMap(tryInterpreter)
+
+  val result = evaluated.value
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
