@@ -37,7 +37,7 @@ object UsingFreeMonads extends App {
 
 
   /**
-   * 2. Create smart constructors using `liftE`
+   * 2. Create smart constructors using `liftF`
    *
    * These methods will make working with our DSL a lot nicer, and will lift `KVStoreA[_]` values into our `KVStore`
    * monad (not the missing "A" in the second type).
@@ -51,7 +51,6 @@ object UsingFreeMonads extends App {
   // Put returns nothing (i.e. Unit).
   def put[T](key: String, value: T): KVStore[Unit] =
     Free.liftF[KVStoreA, Unit](Put[T](key, value))
-
 
   // Get returns a T value.
   def get[T](key: String): KVStore[Option[T]] =

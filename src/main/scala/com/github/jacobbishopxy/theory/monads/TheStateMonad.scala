@@ -14,7 +14,7 @@ object TheStateMonad {
    * 1. Creating and Unpacking State
    *
    * Boiled down to their simplest form, instances of `State[S, A]` represent functions of type
-   * `S => (A, A)`. `S` is the type of the state and `A` is the type of the result.
+   * `S => (S, A)`. `S` is the type of the state and `A` is the type of the result.
    */
 
   import cats.data.State
@@ -116,14 +116,12 @@ object TheStateMonad {
    * of intermediate stages that only represent transformations on the state:
    */
 
-  import State._
-
   val program: State[Int, (Int, Int, Int)] = for {
-    a <- get[Int]
-    _ <- set[Int](a + 1)
-    b <- get[Int]
-    _ <- modify[Int](_ + 1)
-    c <- inspect[Int, Int](_ * 1000)
+    a <- State.get[Int]
+    _ <- State.set[Int](a + 1)
+    b <- State.get[Int]
+    _ <- State.modify[Int](_ + 1)
+    c <- State.inspect[Int, Int](_ * 1000)
   } yield (a, b, c)
 
   val (s, r) = program.run(1).value
@@ -226,7 +224,7 @@ object ExercisePostOrderCalculator {
    * using `flatMap`. `evalOne` produces a simple stack transformation and `evalAll` produces a complex one,
    * but they're both pure functions and we can use them in any order as many times as we like
    */
-  val program1 = for {
+  val program1: IndexedStateT[Eval, List[Int], List[Int], Int] = for {
     _ <- evalAll(List("1", "2", "+"))
     _ <- evalAll(List("3", "4", "+"))
     ans <- evalOne("*")

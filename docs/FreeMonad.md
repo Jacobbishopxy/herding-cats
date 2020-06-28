@@ -44,13 +44,13 @@ Free程序由三部分组成：
 
 ## Free Monad如何工作的
 
-1. 创建AST
+1. 创建ADT
 
 2. 创建DSL
 
-3. program
+3. program组合ADT描述业务过程
 
-4. interpreter
+4. interpreter(compiler)解释器关联ADT与实际业务
 
 5. 运行program
 
