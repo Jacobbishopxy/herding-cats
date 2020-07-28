@@ -1,7 +1,7 @@
 package com.github.jacobbishopxy.caseStudies.dataValidation
 
 /**
- * Created by Administrator on 2/18/2020
+ * Created by Jacob on 2/18/2020
  *
  * In this case study we will build a library for validation. What do we mean by validation? Almost all programs
  * must check their input meets certain criteria. User names must not be blank, email addresses must be valid,

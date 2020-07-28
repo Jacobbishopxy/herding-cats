@@ -1,7 +1,7 @@
 package com.github.jacobbishopxy.caseStudies.dataValidation
 
 /**
- * Created by Administrator on 2/19/2020
+ * Created by Jacob on 2/19/2020
  */
 object Kleislis {
 

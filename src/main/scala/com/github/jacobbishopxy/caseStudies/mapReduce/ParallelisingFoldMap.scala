@@ -1,7 +1,7 @@
 package com.github.jacobbishopxy.caseStudies.mapReduce
 
 /**
- * Created by Administrator on 2/17/2020
+ * Created by Jacob on 2/17/2020
  */
 object ParallelisingFoldMap {
 
