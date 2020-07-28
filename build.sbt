@@ -8,7 +8,7 @@
 ThisBuild / name := "herding-cats"
 ThisBuild / useCoursier := false // temporarily disable Coursier
 ThisBuild / organization := "com.github.jacobbishopxy"
-ThisBuild / scalaVersion := "2.13.1"
+ThisBuild / scalaVersion := "2.13.3"
 
 javacOptions ++= Seq("-encoding", "UTF-8")
 javaOptions in run += "-Xmx1G"
