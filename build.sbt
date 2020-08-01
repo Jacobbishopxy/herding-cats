@@ -25,6 +25,8 @@ scalacOptions ++= List(
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
 val catsV = "2.0.0"
+val catsColV = "0.9.0"
+val catsEffV = "2.1.4"
 
 libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % catsV,
@@ -33,7 +35,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-laws" % catsV,
   "org.typelevel" %% "cats-free" % catsV,
   "org.typelevel" %% "simulacrum" % "1.0.0",
-  "org.typelevel" %% "cats-collections-core" % "0.9.0",
-  "org.typelevel" %% "cats-effect" % "2.1.3",
+  "org.typelevel" %% "cats-collections-core" % catsColV,
+  "org.typelevel" %% "cats-effect" % catsEffV,
 )
 
