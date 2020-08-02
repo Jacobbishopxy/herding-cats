@@ -1,7 +1,8 @@
 package com.github.jacobbishopxy.catsEffect
 
-import cats.effect.{Concurrent, IO, Resource}
+import cats.effect._
 import cats.effect.concurrent.Semaphore
+import cats.effect.syntax.all._
 import cats.implicits._
 import java.io._
 
@@ -211,9 +212,89 @@ object TutorialCopyingContentsOfAFile1 {
   def copy(origin: File, destination: File)(implicit concurrent: Concurrent[IO]): IO[Long] =
     for {
       guard <- Semaphore[IO](1)
-      count <- inputOutputStreams(origin, destination, guard).use {case (in, out) =>
+      count <- inputOutputStreams(origin, destination, guard).use { case (in, out) =>
         guard.withPermit(transfer(in, out))
       }
     } yield count
+}
+
+
+object Main extends IOApp {
+
+  /**
+   * `IOApp` for our final program
+   *
+   * 这个程序只接受两个参数：原始文件和目标文件的名字。我们使用`IOApp`，因为它可以让我们的主函数保持纯函数。
+   *
+   * `IOApp`是一个类似与Scala的`App`，不同之处在于我们使用纯函数运行。当我们运行run时2，任何的打断（比如Ctrl+c）将被视为取消
+   * 正在运行的IO。同样的`IOApp`提供隐式`Timer[IO]`和`ContextShift[IO]`实例（暂未涉及）。`ContextShift[IO]`提供一个
+   * `Concurrent[IO]`在域中，用于copy函数。
+   */
+  def copy(origin: File, destination: File): IO[Long] = ???
+
+  override def run(args: List[String]): IO[ExitCode] =
+    for {
+      _ <-
+        if (args.length < 2) IO.raiseError(new IllegalArgumentException("Need origin and destination files"))
+        else IO.unit
+      orig = new File(args.head)
+      dest = new File(args(1))
+      count <- copy(orig, dest)
+      _ <- IO(println(s"$count bytes copied from ${orig.getPath} to ${dest.getPath}"))
+    } yield ExitCode.Success
+
+}
+
+
+object PolymorphicCatsEffect {
+
+  /**
+   * 我们还需要注意IO的一个重要特征。IO可以封装副作用，但是定义并行的async和cancelable的IO实例依赖于已存在的`Concurrent[IO]`实例。
+   * `Concurrent[F[_]]`是一个typeclass，这里的F携带副作用，这个typeclass拥有并行的取消或开始F副作用的能力。`Concurrent`继承了
+   * typeclass `Async[F[_]]`，因此允许你定义同步/异步计算。`Async[F[_]]`继承了typeclass `Sync[F[_]]`，所以可以暂停F副作用的
+   * 执行。
+   *
+   * 那么我们是否能用`F[_]: Sync`来代替 `IO`呢？是的，并且在生产代码中这是推荐的。看一下我们将要定义一个多态版本的`transfer`函数，
+   * 即使用`Sync[F[_]]`实例的`delay`和`pure`方法，替换所有用到`IO`的地方。
+   */
+  def transmit[F[_] : Sync](origin: InputStream,
+                            destination: OutputStream,
+                            buffer: Array[Byte],
+                            acc: Long): F[Long] =
+    for {
+      amount <- Sync[F].delay(origin.read(buffer, 0, buffer.length))
+      count <-
+        if (amount > -1)
+          Sync[F].delay(destination.write(buffer, 0, amount)) >>
+            transmit(origin, destination, buffer, acc + amount)
+        else
+          Sync[F].pure(acc)
+    } yield count
+
+  /**
+   * 我们可以使用大部分之前的代码，但是copy函数我们需要一个完整的`Concurrent[F]`实例，这是因为它是被`Semaphore`实例所需要的。
+   *
+   * 只有在你的main函数中我们才会为F设置IO。当然了，一个`Concurrent[IO]`实例需要在作用域中，但是该实例是显然可以由`IOApp`提供，
+   * 所以我们不需要关心它。
+   *
+   * 多态的代码拥用更少的约束，因为函数们不会被IO绑定，并且适用于任何`F[_]`只要有一个typeclass的实例在作用域中需要(`Sync[F[_]]`,
+   * `Concurrent[F[_]]`等)。所需的typeclass将会由我们的代码提供。列，如果副作用的执行需要被取消，我们就用上`Concurrent[F[_]]`，
+   * 同时可以更加方便的使用任何类型的F。
+   */
+  def transfer[F[_]: Sync](origin: InputStream,
+                           destination: OutputStream): F[Long] = ???
+
+  def inputOutputStreams[F[_]: Sync](in: File,
+                                     out: File,
+                                     guard: Semaphore[F]): Resource[F, (InputStream, OutputStream)] = ???
+
+  def copy[F[_]: Concurrent](origin: File, destination: File): F[Long] =
+    for {
+      guard <- Semaphore[F](1)
+      count <- inputOutputStreams(origin, destination, guard).use { case (in, out) =>
+        guard.withPermit(transfer(in, out))
+      }
+    }  yield count
+
 }
 
