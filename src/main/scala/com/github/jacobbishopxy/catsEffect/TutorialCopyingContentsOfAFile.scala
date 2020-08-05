@@ -251,7 +251,7 @@ object PolymorphicCatsEffect {
   /**
    * 我们还需要注意IO的一个重要特征。IO可以封装副作用，但是定义并行的async和cancelable的IO实例依赖于已存在的`Concurrent[IO]`实例。
    * `Concurrent[F[_]]`是一个typeclass，这里的F携带副作用，这个typeclass拥有并行的取消或开始F副作用的能力。`Concurrent`继承了
-   * typeclass `Async[F[_]]`，因此允许你定义同步/异步计算。`Async[F[_]]`继承了typeclass `Sync[F[_]]`，所以可以暂停F副作用的
+   * typeclass `Async[F[_]]`，因此允许你定义同步/异步计算。`Async[F[_]]`继承了typeclass `Sync[F[_]]`，所以可以延迟副作用的
    * 执行。
    *
    * 那么我们是否能用`F[_]: Sync`来代替 `IO`呢？是的，并且在生产代码中这是推荐的。看一下我们将要定义一个多态版本的`transfer`函数，
@@ -281,20 +281,20 @@ object PolymorphicCatsEffect {
    * `Concurrent[F[_]]`等)。所需的typeclass将会由我们的代码提供。列，如果副作用的执行需要被取消，我们就用上`Concurrent[F[_]]`，
    * 同时可以更加方便的使用任何类型的F。
    */
-  def transfer[F[_]: Sync](origin: InputStream,
-                           destination: OutputStream): F[Long] = ???
+  def transfer[F[_] : Sync](origin: InputStream,
+                            destination: OutputStream): F[Long] = ???
 
-  def inputOutputStreams[F[_]: Sync](in: File,
-                                     out: File,
-                                     guard: Semaphore[F]): Resource[F, (InputStream, OutputStream)] = ???
+  def inputOutputStreams[F[_] : Sync](in: File,
+                                      out: File,
+                                      guard: Semaphore[F]): Resource[F, (InputStream, OutputStream)] = ???
 
-  def copy[F[_]: Concurrent](origin: File, destination: File): F[Long] =
+  def copy[F[_] : Concurrent](origin: File, destination: File): F[Long] =
     for {
       guard <- Semaphore[F](1)
       count <- inputOutputStreams(origin, destination, guard).use { case (in, out) =>
         guard.withPermit(transfer(in, out))
       }
-    }  yield count
+    } yield count
 
 }
 
