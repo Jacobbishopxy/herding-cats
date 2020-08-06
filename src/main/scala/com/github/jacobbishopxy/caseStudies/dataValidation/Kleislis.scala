@@ -174,19 +174,26 @@ object KleislisP2 {
   def longerThan(n: Int): Predicate[Errors, String] =
     Predicate.lift(
       error(s"Must be longer than $n characters"),
-      str => str.length > n)
+      str => str.length > n
+    )
+
   val alphanumeric: Predicate[Errors, String] =
     Predicate.lift(
       error(s"Must be all alphanumeric characters"),
-      str => str.forall(_.isLetterOrDigit))
+      str => str.forall(_.isLetterOrDigit)
+    )
+
   def contains(char: Char): Predicate[Errors, String] =
     Predicate.lift(
       error(s"Must contain the character $char"),
-      str => str.contains(char))
+      str => str.contains(char)
+    )
+
   def containsOnce(char: Char): Predicate[Errors, String] =
     Predicate.lift(
       error(s"Must contain the character $char only once"),
-      str => str.filter(c => c == char).length == 1)
+      str => str.filter(c => c == char).length == 1
+    )
 
   // Our username and email examples are slightly different in that we make use of `check()` and `checkPred()` in
   // different situations:
@@ -224,68 +231,4 @@ object KleislisP2 {
   createUser("", "sam@example@com")
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

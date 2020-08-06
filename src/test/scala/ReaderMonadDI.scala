@@ -99,7 +99,7 @@ object ReaderMonadDI extends App {
   val permissionRepo = new PermissionRepoImpl
   val repo = Repo(userRepo, permissionRepo)
 
-  val createUserResp=
+  val createUserResp =
     UserHandler
       .createUser(User(1001, "lambda", "admin"))
       .run(repo)

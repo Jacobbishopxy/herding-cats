@@ -472,9 +472,7 @@ object TransformingDataP6 {
     Check(longerThan(3) and contains('.'))
 
   val joinMail: Check[Errors, (String, String), String] =
-    Check { case (l, r) =>
-      (checkLeft(l), checkRight(r)).mapN(_ + "@" + _)
-    }
+    Check { i => (checkLeft(i._1), checkRight(i._2)).mapN(_ + "@" + _) }
 
   val checkEmail: Check[Errors, String, String] =
     splitEmail andThen joinMail
