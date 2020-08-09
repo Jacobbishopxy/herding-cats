@@ -1,10 +1,15 @@
 package com.github.jacobbishopxy.catsEffect.dataTypes
 
+import java.io.{BufferedReader, File, FileInputStream, InputStreamReader}
+
 import cats.effect.{ContextShift, IO}
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.io.Source
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 
@@ -231,4 +236,173 @@ object IODataType3 {
       }
     }
 }
+
+object IODataType4 {
+
+  /**
+   * Concurrency and Cancellation
+   *
+   * `IO`可以描述可中断的异步过程。实现细节如下：
+   *
+   * 不是所有的IO任务是可被取消的。进入取消状态需要在异步边界之后。它需要以下2中情况才可达成：
+   *
+   * - 构建IO任务时使用`IO.cancelable`,`IO.async`,`IO.asyncF`或者`IO.bracket`
+   *
+   * - 使用`IO.cancelBoundary`或者`IO.shift`
+   *
+   * 注意第二种情况是第一种情况的结果，并且所有被包含的这些操作同样是可被取消的。它包括但不限于等待`Mvar.take`,`Mvar.put`和
+   * `Deferred.get`。
+   *
+   * 我们同时也需要注意`flatMap`链当且仅当在一个异步界限之后可以被取消。在一个异步界限之后，取消机制会应用到任何N`faltMap`。
+   * N值为硬编码512。
+   */
+  implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
+  def retryUntilRight[A, B](io: IO[Either[A, B]]): IO[B] =
+    io.flatMap {
+      case Right(b) => IO.pure(b)
+      case Left(_) => retryUntilRight(io)
+    }
+
+  // non-terminating IO that is NOT cancelable
+  val notCancelable: IO[Int] = retryUntilRight(IO(Left(0)))
+
+  // non-terminating IO that is cancelable because there is an
+  // async boundary created by IO.shift before `flatMap` chain
+  val cancelable: IO[Int] = IO.shift *> retryUntilRight(IO(Left(0)))
+
+  /**
+   * Building cancelable IO tasks
+   *
+   * 可被取消的`IO`任务可被`IO.cancelable`所构建。`delayedTick`案例用到的是Java的`ScheduledExecutorService`，这里回忆一下：
+   */
+  def sleep(d: FiniteDuration)(implicit sc: ScheduledExecutorService): IO[Unit] =
+    IO.cancelable { cb =>
+      val r = new Runnable {
+        override def run(): Unit = cb(Right(()))
+      }
+      val f = sc.schedule(r, d.length, d.unit)
+      IO(f.cancel(false)).void
+    }
+
+  /**
+   * 重要：如果你的任务没有指定取消逻辑，那么这个任务是不可被取消的。以Java的blocking I/O为例:
+   */
+  def unsafeFileToString(file: File): String = {
+    val in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "utf-8"))
+
+    try {
+      // Uninterruptible loop
+      val sb = new StringBuilder()
+      var hasNext = true
+      while (hasNext) {
+        hasNext = false
+        val line = in.readLine()
+        if (line != null) {
+          hasNext = true
+          sb.append(line)
+        }
+      }
+      sb.toString
+    } finally {
+      in.close()
+    }
+  }
+
+  def readFile(file: File)(implicit ec: ExecutionContext): IO[String] =
+    IO.async[String] { cb =>
+      ec.execute(() => {
+        try {
+          // Signal completion
+          cb(Right(unsafeFileToString(file)))
+        } catch {
+          case NonFatal(e) =>
+            cb(Left(e))
+        }
+      })
+    }
+
+  /**
+   * 上述案例显然是不可被取消的。现在我们不用Java的`Thread.interrupt`，因为这是不安全、不可靠的，况且任何`IO`需要针对不同平台的便携性。
+   *
+   * 但是这里还有许多灵活的地方我们可以改进。我们可以简单的让一个变量转换为`false`，并在`while`循环中观察：
+   */
+  def unsafeFileToStringPro(file: File, isActive: AtomicBoolean): String = {
+    val sc = new StringBuilder
+    val linesIterator = Source.fromFile(file).getLines()
+    var hasNext = true
+    while (hasNext && isActive.get) {
+      sc.append(linesIterator.next())
+      hasNext = linesIterator.hasNext
+    }
+    sc.toString
+  }
+
+  def readFilePro(file: File)(implicit ec: ExecutionContext): IO[String] =
+    IO.cancelable[String] { cb =>
+      val isActive = new AtomicBoolean(true)
+
+      ec.execute(() => {
+        try {
+          // Signal completion
+          cb(Right(unsafeFileToStringPro(file, isActive)))
+        } catch {
+          case NonFatal(e) =>
+            cb(Left(e))
+        }
+      })
+      // On cancel, signal it
+      IO(isActive.set(false)).void
+    }
+
+  /**
+   * Gotcha: Cancellation is a Concurrent Action!
+   *
+   * 通常这并不是显而易见的，无论是从上述例子中，还是你或许会尝试如下的：
+   */
+  def readLine(in: BufferedReader)(implicit ec: ExecutionContext): IO[String] =
+    IO.cancelable[String] { cb =>
+      ec.execute(() => cb(
+        try Right(in.readLine())
+        catch {
+          case NonFatal(e) => Left(e)
+        }
+      ))
+      // Cancellation logic is not thread-safe!
+      IO(in.close()).void
+    }
+
+  /**
+   * 这样类似的操作可能在流处理中，通过`IO`（如FS2，Monix等库）抽象I/O区块很有用。
+   *
+   * 但是上述的操作是错误的，因为`in.close()`是与`in.readLine`并行的，这样会导致抛出异常，并且多数情况下会导致数据污染。这显然是大错特错，
+   * 我们希望终端的IO无论它是在做什么，同时还不会造成数据污染。
+   *
+   * 因此用户需要考虑去处理线程安全。以下是一种方法：
+   */
+  def readLinePro(in: BufferedReader)(implicit ec: ExecutionContext): IO[String] =
+    IO.cancelable[String] { cb =>
+      val isActive = new AtomicBoolean(true)
+      ec.execute {() =>
+        if (isActive.getAndSet(false)) {
+          try cb(Right(in.readLine()))
+          catch {
+            case NonFatal(e) => cb(Left(e))
+          }
+        }
+        // Note there's no else; if cancellation was executed then we don't call
+        // the callback; task becoming non-terminating
+      }
+      // Cancellation logic
+      IO {
+        // Thread-safe gate
+        if (isActive.getAndSet(false)) in.close()
+      }.void
+    }
+
+  /**
+   * 在这个例子中，取消的逻辑本身调用`in.close()`，但是调用是安全的，这归功于我们使用了一个原子的`getAndSet`带来的线程守护。
+   */
+}
+
 
